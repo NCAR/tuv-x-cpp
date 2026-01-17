@@ -1,11 +1,55 @@
 #include <tuvx/solver/delta_eddington.hpp>
 
 #include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 using namespace tuvx;
+
+// ============================================================================
+// CSV Output Support
+// ============================================================================
+
+/// @brief Global flag to enable CSV output (set via --csv command line arg)
+bool g_csv_output = false;
+
+/// @brief Output a CSV data row for solver benchmark results
+/// Format: test_name,tau,omega,g,mu0,surface_albedo,expected_T,actual_T,expected_R,actual_R,rel_error_T,rel_error_R
+void OutputCSV(
+    const std::string& test_name,
+    double tau,
+    double omega,
+    double g,
+    double mu0,
+    double surface_albedo,
+    double expected_T,
+    double actual_T,
+    double expected_R,
+    double actual_R)
+{
+  if (!g_csv_output) return;
+
+  double rel_error_T = (expected_T > 1e-15) ? std::abs(actual_T - expected_T) / expected_T : 0.0;
+  double rel_error_R = (expected_R > 1e-15) ? std::abs(actual_R - expected_R) / expected_R : 0.0;
+
+  std::cout << std::setprecision(10)
+            << test_name << ","
+            << tau << ","
+            << omega << ","
+            << g << ","
+            << mu0 << ","
+            << surface_albedo << ","
+            << expected_T << ","
+            << actual_T << ","
+            << expected_R << ","
+            << actual_R << ","
+            << rel_error_T << ","
+            << rel_error_R << "\n";
+}
 
 // ============================================================================
 // Test Fixture
@@ -94,6 +138,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_UnitOpticalDepth)
 
   double expected_T = std::exp(-tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_UnitOpticalDepth", tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: tau=1, SZA=0 should give T=exp(-1)";
@@ -131,6 +179,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_SlantPath60)
 
   double expected_T = std::exp(-tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_SlantPath60", tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: tau=1, SZA=60 should give T=exp(-2)";
@@ -162,6 +214,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_SlantPath75)
 
   double expected_T = std::exp(-tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_SlantPath75", tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: tau=1, SZA=75 should give T=exp(-tau/mu0)";
@@ -191,6 +247,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_ThickLayer)
 
   double expected_T = std::exp(-tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_ThickLayer", tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: tau=5, SZA=0 should give T=exp(-5)";
@@ -220,6 +280,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_ThinLayer)
 
   double expected_T = std::exp(-tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_ThinLayer", tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: tau=0.1, SZA=0 should give T=exp(-0.1)";
@@ -251,6 +315,10 @@ TEST_F(DeltaEddingtonBenchmark, BeerLambert_MultiLayer)
   double total_tau = tau_per_layer * n_layers;
   double expected_T = std::exp(-total_tau / mu0);
   double actual_T = CalculateDirectTransmittance(result, flux_toa, mu0);
+  double actual_R = CalculateReflectance(result, flux_toa, mu0);
+
+  OutputCSV("BeerLambert_MultiLayer", total_tau, omega, g, mu0, 0.0,
+            expected_T, actual_T, 0.0, actual_R);
 
   EXPECT_NEAR(actual_T, expected_T, expected_T * 0.001)
       << "Beer-Lambert: 4 layers x tau=0.5 should give T=exp(-2)";
@@ -289,6 +357,10 @@ TEST_F(DeltaEddingtonBenchmark, EnergyConservation_Isotropic)
   double R = CalculateReflectance(result, flux_toa, mu0);
   double T = CalculateTransmittance(result, flux_toa, mu0);
 
+  // For conservative scattering, expected R + T = 1.0
+  OutputCSV("EnergyConservation_Isotropic", tau, omega, g, mu0, 0.0,
+            1.0, T, 0.0, R);
+
   // Simplified solver: verify energy within reasonable bounds
   EXPECT_GT(R, 0.0) << "Reflectance should be positive";
   EXPECT_GT(T, 0.0) << "Transmittance should be positive";
@@ -320,6 +392,9 @@ TEST_F(DeltaEddingtonBenchmark, EnergyConservation_Forward)
 
   double R = CalculateReflectance(result, flux_toa, mu0);
   double T = CalculateTransmittance(result, flux_toa, mu0);
+
+  OutputCSV("EnergyConservation_Forward", tau, omega, g, mu0, 0.0,
+            1.0, T, 0.0, R);
 
   // Check for valid numerical results
   EXPECT_FALSE(std::isnan(R)) << "Reflectance should not be NaN";
@@ -990,4 +1065,29 @@ TEST_F(DeltaEddingtonBenchmark, HigherOmega_MoreScattering)
 
   EXPECT_GT(diffuse_high, diffuse_low)
       << "Higher omega should produce more diffuse radiation";
+}
+
+// ============================================================================
+// Custom Main for CSV Output
+// ============================================================================
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+  // Check for --csv flag
+  for (int i = 1; i < argc; ++i)
+  {
+    if (std::string(argv[i]) == "--csv")
+    {
+      g_csv_output = true;
+      // Print CSV header
+      std::cout << "test_name,tau,omega,g,mu0,surface_albedo,"
+                << "expected_T,actual_T,expected_R,actual_R,"
+                << "rel_error_T,rel_error_R\n";
+      break;
+    }
+  }
+
+  return RUN_ALL_TESTS();
 }

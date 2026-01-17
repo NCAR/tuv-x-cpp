@@ -336,11 +336,53 @@ Run with extended timeout for comprehensive benchmarks.
 
 ---
 
-## 6. Progress Log
+## 6. Visualization and Plotting
+
+### 6.1 CSV Output from Tests
+
+The benchmark tests support `--csv` command-line flag to output results for plotting:
+
+```bash
+# Generate CSV data
+./build/test/unit/test_delta_eddington_benchmarks --csv \
+    --gtest_filter="*BeerLambert*:*EnergyConservation*" 2>/dev/null \
+    | grep -v "^\[" | grep -v "^Note:" > data/benchmarks.csv
+```
+
+**CSV Format:**
+```
+test_name,tau,omega,g,mu0,surface_albedo,expected_T,actual_T,expected_R,actual_R,rel_error_T,rel_error_R
+```
+
+### 6.2 Plotting Scripts
+
+Python plotting scripts in `scripts/` directory (requires `mpas` conda environment):
+
+```bash
+conda activate mpas
+python scripts/plot_solver_benchmarks.py data/benchmarks.csv -o data/benchmark
+```
+
+**Generated Plots:**
+- `benchmark_beer_lambert.{png,pdf}` - Expected vs actual transmittance, relative errors
+- `benchmark_energy_conservation.{png,pdf}` - R + T energy balance for ω=1 cases
+- `benchmark_parameter_space.{png,pdf}` - T vs τ, T vs μ₀, R vs T summary
+
+**Features:**
+- Seaborn styling with DejaVu Sans font
+- LaTeX math rendering ($\tau$, $\mu_0$, $\omega$, etc.)
+- 300 DPI PNG and vector PDF output
+- Automatic handling of machine-precision errors
+- Summary statistics panel
+
+---
+
+## 7. Progress Log
 
 | Date | Test | Result | Notes |
 |------|------|--------|-------|
 | 2026-01-17 | Delta-Eddington benchmarks | **Passing** | 26 tests: Beer-Lambert (6), energy conservation (5), Toon-inspired (5), thin/thick limits (4), multi-layer (3), physical consistency (3). Total test count: 519 |
+| 2026-01-17 | CSV output + plotting | **Implemented** | `--csv` flag, Python plotting scripts with seaborn |
 
 ### Implemented Test Summary
 

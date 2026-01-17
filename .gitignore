@@ -15,6 +15,7 @@ Thumbs.db
 
 # Generated
 compile_commands.json
+data/
 
 # Prerequisites
 *.d
