@@ -4,6 +4,19 @@ A header-only C++20 radiative transfer library for UV-Visible photolysis calcula
 
 Part of the [MUSICA](https://github.com/NCAR/musica) ecosystem.
 
+## Project Goals
+
+1. **Feature parity with TUV-x Fortran** - Implement all photolysis reactions and radiative
+   transfer capabilities from the [reference Fortran implementation](https://github.com/NCAR/tuv-x),
+   including 69 photolysis reactions, 28 dose rate calculations, and high-resolution spectral data.
+
+2. **MUSICA API integration** - Provide C and Fortran bindings compatible with the MUSICA
+   ecosystem, enabling coupling with [MICM](https://github.com/NCAR/micm) for chemistry-photolysis
+   feedback in atmospheric models.
+
+3. **Header-only, dependency-free design** - Embed all spectral data directly in the source
+   for easy integration with no runtime file dependencies.
+
 ## Overview
 
 TUV-x C++ computes actinic fluxes and photolysis rate coefficients (J-values) for atmospheric chemistry models. It implements the Delta-Eddington two-stream approximation for radiative transfer through a plane-parallel atmosphere with spherical geometry corrections.
