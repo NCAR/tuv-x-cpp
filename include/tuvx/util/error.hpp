@@ -1,0 +1,36 @@
+#pragma once
+
+// Error category definitions for TUV-x
+// These macros define error categories and codes used throughout the library
+
+// Error categories
+#define TUVX_ERROR_CATEGORY_CONFIGURATION "TUVX Configuration"
+#define TUVX_ERROR_CATEGORY_GRID          "TUVX Grid"
+#define TUVX_ERROR_CATEGORY_PROFILE       "TUVX Profile"
+#define TUVX_ERROR_CATEGORY_RADIATOR      "TUVX Radiator"
+#define TUVX_ERROR_CATEGORY_INTERNAL      "TUVX Internal Error"
+
+// Configuration errors (1xx)
+#define TUVX_CONFIGURATION_ERROR_CODE_INVALID_KEY  1
+#define TUVX_CONFIGURATION_ERROR_CODE_MISSING_KEY  2
+#define TUVX_CONFIGURATION_ERROR_CODE_INVALID_TYPE 3
+#define TUVX_CONFIGURATION_ERROR_CODE_INVALID_FILE 4
+
+// Grid errors (2xx)
+#define TUVX_GRID_ERROR_CODE_INVALID_BOUNDS    201
+#define TUVX_GRID_ERROR_CODE_INVALID_SIZE      202
+#define TUVX_GRID_ERROR_CODE_OUT_OF_RANGE      203
+#define TUVX_GRID_ERROR_CODE_GRID_NOT_FOUND    204
+
+// Profile errors (3xx)
+#define TUVX_PROFILE_ERROR_CODE_INVALID_SIZE       301
+#define TUVX_PROFILE_ERROR_CODE_NEGATIVE_VALUES    302
+#define TUVX_PROFILE_ERROR_CODE_PROFILE_NOT_FOUND  303
+
+// Radiator errors (4xx)
+#define TUVX_RADIATOR_ERROR_CODE_INVALID_WAVELENGTH 401
+#define TUVX_RADIATOR_ERROR_CODE_INVALID_DATA       402
+#define TUVX_RADIATOR_ERROR_CODE_RADIATOR_NOT_FOUND 403
+
+// Internal errors (9xx)
+#define TUVX_INTERNAL_ERROR_CODE_GENERAL 901

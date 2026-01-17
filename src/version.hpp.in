@@ -1,0 +1,34 @@
+#pragma once
+
+#include <string>
+
+namespace tuvx
+{
+  /// @brief Get the full version string
+  /// @return Version string in the format "major.minor.patch"
+  inline std::string GetVersion()
+  {
+    return "@PROJECT_VERSION@";
+  }
+
+  /// @brief Get the major version number
+  /// @return Major version number
+  inline int GetVersionMajor()
+  {
+    return @PROJECT_VERSION_MAJOR@;
+  }
+
+  /// @brief Get the minor version number
+  /// @return Minor version number
+  inline int GetVersionMinor()
+  {
+    return @PROJECT_VERSION_MINOR@;
+  }
+
+  /// @brief Get the patch version number
+  /// @return Patch version number
+  inline int GetVersionPatch()
+  {
+    return @PROJECT_VERSION_PATCH@;
+  }
+}  // namespace tuvx
