@@ -7,12 +7,15 @@ This document tracks ideas and progress for numerical validation of TUV-x C++ ag
 | Test Category | Status | Notes |
 |---------------|--------|-------|
 | Delta-Eddington analytical | **Implemented** | Beer-Lambert tests with 0.1% tolerance |
-| Energy conservation | **Implemented** | Conservative scattering R+T=1 tests |
-| Toon et al. (1989) benchmarks | **Implemented** | Parameterized tests with 1% tolerance |
+| Energy conservation | **Implemented** | Conservative scattering R+T≈1 tests |
+| Toon et al. (1989) benchmarks | **Implemented** | Qualitative tests for simplified solver |
 | Optically thin/thick limits | **Implemented** | Asymptotic behavior verification |
 | Multi-layer integration | **Implemented** | Layer discretization consistency |
-| Photolysis J-values | Planned | |
-| TUV-x Fortran parity | Planned | |
+| Physical consistency | **Implemented** | Asymmetry, albedo, omega effects |
+| Fortran parity infrastructure | Planned | NetCDF reader, comparison utils |
+| Photolysis J-values (69 reactions) | Planned | Requires cross-sections, radiators |
+| Dose rates (28 types) | Planned | Requires spectral weights |
+| Radiation field validation | Planned | Requires full radiator stack |
 
 ---
 
@@ -132,36 +135,141 @@ For optically thick (strong absorption):
 
 ## 3. TUV-x Fortran Parity Tests
 
-### 3.1 Identical Input Comparison
+### 3.1 Reference Data Location
 
-Create test cases with identical inputs to TUV-x Fortran:
-- Same wavelength grid
-- Same altitude grid
-- Same atmospheric profile (T, p, O3, etc.)
-- Same cross-sections and quantum yields
-- Same solar flux
+TUV-x Fortran reference data at `/Users/fillmore/EarthSystem/TUV-x/`:
 
-Compare outputs:
-- Actinic flux at each level
-- J-values for key reactions
+| File | Contents | Dimensions |
+|------|----------|------------|
+| `test/regression/photolysis_rates/photo_rates.nc` | 69 photolysis rates | 125 levels × 5 SZAs |
+| `test/regression/dose_rates/dose_rates.nc` | 28 dose rates | 125 levels × 5 SZAs |
+| `test/regression/radiators/radField.*.nc` | Radiation field components | varies |
 
-### 3.2 Standard Atmosphere Cases
+### 3.2 Standard Test Scenario (TUV 5.4)
 
-**US Standard Atmosphere 1976**:
-- Surface to 80 km
-- Standard T, p profiles
-- Standard O3 column
+Configuration from `examples/tuv_5_4.json`:
 
-**Tropical atmosphere**:
-- Higher tropopause
-- Different O3 profile
+```
+Height grid:     0-120 km, 1 km resolution (121 levels)
+Wavelength grid: data/grids/wavelength/combined.grid
+Date:            March 21, 2002 (vernal equinox)
+Location:        0°N, 0°E (equator)
+Time points:     12:00, 14:00 local
+Surface albedo:  0.1 (uniform)
+Atmosphere:      US Standard Atmosphere 1976
 
-### 3.3 Tolerance Criteria
+Profiles:
+- O3:          data/profiles/atmosphere/ussa.ozone
+- Air density: data/profiles/atmosphere/ussa.dens
+- Temperature: data/profiles/atmosphere/ussa.temp
 
-Expected agreement levels:
-- Direct beam: < 0.1% difference
-- Diffuse radiation: < 1% difference (method-dependent)
-- J-values: < 5% difference (cumulative errors)
+Solar flux:
+- SUSIM (hi-res)
+- ATLAS3 1994
+- SAO2010
+- Neckel
+
+Radiators:
+- Air (Rayleigh scattering)
+- O2 (with Schumann-Runge bands)
+- O3 (temperature-dependent cross-section)
+- Aerosols (550nm OD=0.235, SSA=0.99, g=0.61)
+```
+
+### 3.3 Photolysis Reactions (69 total)
+
+**Priority reactions for initial validation:**
+
+| # | Reaction | Notes |
+|---|----------|-------|
+| 1 | O2 + hν → O + O | Schumann-Runge bands |
+| 2 | O3 + hν → O2 + O(1D) | Primary O3 photolysis |
+| 3 | O3 + hν → O2 + O(3P) | Secondary O3 photolysis |
+| 4 | NO2 + hν → NO + O(3P) | NOx chemistry |
+| 5 | H2O2 + hν → OH + OH | HOx source |
+| 6 | HNO3 + hν → OH + NO2 | NOy chemistry |
+| 7 | CH2O + hν → H + HCO | Formaldehyde radical |
+| 8 | CH2O + hν → H2 + CO | Formaldehyde molecular |
+
+**Additional reactions by category:**
+
+- **Nitrogen oxides (12):** HO2, HNO2, HNO4, N2O, N2O5, NO3
+- **Organic peroxides (4):** CH3OOH, HOCH2OOH, CH3COOOH
+- **Organic nitrates (10):** CH3ONO2, C2H5ONO2, nC3H7ONO2, etc.
+- **PANs (4):** CH3(OONO2), CH3CO(OONO2), CH3CH2CO(OONO2)
+- **Aldehydes (10):** CH3CHO, C2H5CHO, CH2=CHCHO, HOCH2CHO, etc.
+- **Ketones (6):** CH3COCH3, CH3COCH2CH3, CHOCHO, etc.
+- **Halogens (20):** Cl2, ClO, OClO, ClOOCl, HOCl, ClONO2, CCl4, CFCs, etc.
+- **Aqueous (3):** NO3-(aq) reactions
+
+### 3.4 Dose Rates (28 total)
+
+| Category | Types |
+|----------|-------|
+| UV bands | UV-A (315-400nm), UV-B (280-315nm), UV-B* (280-320nm), visible (>400nm) |
+| Gaussian | 305nm, 320nm, 340nm, 380nm (10nm FWHM) |
+| Instruments | RB Meter 501, Eppley UV Photometer |
+| Biological | DNA damage, erythema (human), SCUP-mice, SCUP-human, UV index |
+| Environmental | Phytoplankton, PAR (400-700nm), plant damage |
+| Safety | ACGIH TLV, CIE standards |
+| Medical | Previtamin-D3, NMSC |
+
+### 3.5 Tolerance Criteria
+
+From `xsqy.compare.json` and `sw.compare.json`:
+
+| Quantity | RMS Tolerance | Max Tolerance |
+|----------|---------------|---------------|
+| Photolysis rates (most) | 1.0e-6 | 1.0e-5 |
+| Dose rates (most) | 1.0e-6 | 1.0e-5 |
+| DNA damage, erythema | 1.0e-4 | 1.0e-4 |
+| Radiation fields | 1.0e-4 to 1.0e-3 | varies |
+
+### 3.6 Implementation Roadmap
+
+**Phase A: Infrastructure**
+- [ ] Copy reference NetCDF files to `test/data/fortran_reference/`
+- [ ] Implement NetCDF reader for reference data
+- [ ] Create comparison utility class
+- [ ] Set up parameterized test framework
+
+**Phase B: Radiation Field Validation**
+- [ ] Import USSA atmosphere profiles
+- [ ] Configure identical radiator stack (air, O2, O3, aerosols)
+- [ ] Compare actinic flux profiles at 5 SZAs
+- [ ] Compare direct/diffuse irradiance
+
+**Phase C: Photolysis Rate Validation**
+- [ ] Implement priority cross-sections (8 reactions)
+- [ ] Compare J-values against photo_rates.nc
+- [ ] Extend to full 69 reactions
+
+**Phase D: Dose Rate Validation**
+- [ ] Implement spectral weight functions
+- [ ] Compare dose rates against dose_rates.nc
+
+### 3.7 Data File Requirements
+
+Files to copy/link from TUV-x Fortran:
+
+```
+From TUV-x/data/:
+├── cross_sections/
+│   ├── O2_1.nc, O2_parameters.txt
+│   ├── O3_1.nc, O3_2.nc, O3_3.nc, O3_4.nc
+│   └── [60+ additional cross-section files]
+├── grids/wavelength/
+│   └── combined.grid
+├── profiles/
+│   ├── atmosphere/ussa.{ozone,dens,temp}
+│   └── solar/*.flx
+└── quantum_yields/
+    └── [quantum yield files]
+
+From TUV-x/test/regression/:
+└── photolysis_rates/photo_rates.nc
+└── dose_rates/dose_rates.nc
+```
 
 ---
 

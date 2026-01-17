@@ -2,9 +2,9 @@
 
 ## Project Status
 
-**Current State**: Phase 4 Complete - Model orchestration implemented
-**Tests**: 493 passing
-**Branch**: develop (merged to main)
+**Current State**: Phase 5 In Progress - Numerical validation
+**Tests**: 519 passing
+**Branch**: develop
 
 ---
 
@@ -57,20 +57,75 @@
 
 ## Next Steps (Prioritized)
 
-### Phase 5: Numerical Validation (High Priority)
+### Phase 5: Numerical Validation (In Progress)
 See `NUMERICAL-TESTS.md` for detailed test specifications.
 
-- [ ] Delta-Eddington analytical benchmarks
-  - [ ] Pure absorption (Beer-Lambert)
-  - [ ] Conservative scattering (energy conservation)
-  - [ ] Toon et al. (1989) Table 1 cases
-- [ ] Photolysis rate validation
-  - [ ] J(O1D) reference values (Madronich 1987)
-  - [ ] J(NO2) reference values
-- [ ] TUV-x Fortran parity tests
-  - [ ] Set up identical input configurations
-  - [ ] Compare actinic flux profiles
-  - [ ] Compare J-values within tolerance
+**Completed:**
+- [x] Delta-Eddington analytical benchmarks (26 tests)
+  - [x] Pure absorption (Beer-Lambert) - 0.1% tolerance
+  - [x] Energy conservation tests - 10-15% tolerance (simplified solver)
+  - [x] Toon-inspired qualitative tests
+  - [x] Optically thin/thick limits
+  - [x] Multi-layer integration
+  - [x] Physical consistency
+
+**Next: Fortran Parity Testing**
+- [ ] Set up TUV 5.4 reference scenario
+- [ ] Compare radiation field outputs
+- [ ] Compare photolysis rates (69 reactions)
+- [ ] Compare dose rates (28 types)
+
+### Phase 5B: Fortran Feature Parity (High Priority)
+
+**Goal**: Replicate TUV-x Fortran validation tests in C++
+
+**Reference Data** (from TUV-x Fortran):
+- `test/regression/photolysis_rates/photo_rates.nc` - 69 reactions, 125 levels × 5 SZAs
+- `test/regression/dose_rates/dose_rates.nc` - 28 types, 125 levels × 5 SZAs
+- Tolerances: RMS < 1e-6, max < 1e-5
+
+**Standard Test Scenario** (TUV 5.4):
+- Height grid: 0-120 km, 1 km resolution (121 levels)
+- Wavelength grid: combined.grid
+- Date: March 21, 2002 (equinox)
+- Location: 0°N, 0°E
+- Surface albedo: 0.1
+- Atmosphere: US Standard Atmosphere 1976
+
+**Required Components for Parity**:
+
+1. **Cross-Sections** (Phase 6 prerequisite):
+   - [ ] O2 cross-section with Schumann-Runge bands
+   - [ ] O3 cross-section (temperature-dependent, 4 files)
+   - [ ] Air cross-section (Rayleigh)
+   - [ ] 60+ additional cross-sections for full photolysis coverage
+
+2. **Radiators** (Phase 7 prerequisite):
+   - [ ] Air/Rayleigh radiator
+   - [ ] O2 radiator
+   - [ ] O3 radiator
+   - [ ] Aerosol radiator (with wavelength-dependent optical depth)
+
+3. **Data Files**:
+   - [ ] USSA atmosphere profiles (O3, air, O2, temperature)
+   - [ ] Solar flux spectrum (SUSIM, ATLAS3, SAO2010, Neckel)
+   - [ ] Cross-section NetCDF files
+   - [ ] Wavelength grids
+
+4. **Validation Infrastructure**:
+   - [ ] NetCDF output capability
+   - [ ] Comparison utilities (Python or C++)
+   - [ ] Reference data extraction from Fortran
+
+**Priority Photolysis Reactions** (subset for initial validation):
+1. O2 + hν → O + O
+2. O3 + hν → O2 + O(1D)
+3. O3 + hν → O2 + O(3P)
+4. NO2 + hν → NO + O(3P)
+5. H2O2 + hν → OH + OH
+6. HNO3 + hν → OH + NO2
+7. CH2O + hν → H + HCO
+8. CH2O + hν → H2 + CO
 
 ### Phase 6: Additional Cross-Section Types (Medium Priority)
 - [ ] NO2 cross-section (temperature-dependent)
