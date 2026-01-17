@@ -33,3 +33,13 @@ create_tuvx_test(test_radiator_warehouse radiator/test_radiator_warehouse.cpp)
 
 # Radiation field tests
 create_tuvx_test(test_radiation_field radiation_field/test_radiation_field.cpp)
+
+# Solar tests
+create_tuvx_test(test_solar_position solar/test_solar_position.cpp)
+create_tuvx_test(test_extraterrestrial_flux solar/test_extraterrestrial_flux.cpp)
+
+# Surface tests
+create_tuvx_test(test_surface_albedo surface/test_surface_albedo.cpp)
+
+# Spherical geometry tests
+create_tuvx_test(test_spherical_geometry spherical_geometry/test_spherical_geometry.cpp)

@@ -48,5 +48,15 @@
 // Radiation field headers
 #include <tuvx/radiation_field/radiation_field.hpp>
 
+// Solar position and flux headers
+#include <tuvx/solar/solar_position.hpp>
+#include <tuvx/solar/extraterrestrial_flux.hpp>
+
+// Surface albedo headers
+#include <tuvx/surface/surface_albedo.hpp>
+
+// Spherical geometry headers
+#include <tuvx/spherical_geometry/spherical_geometry.hpp>
+
 // Version information
 #include <tuvx/version.hpp>
