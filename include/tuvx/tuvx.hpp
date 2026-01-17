@@ -65,5 +65,10 @@
 // Photolysis rate headers
 #include <tuvx/photolysis/photolysis_rate.hpp>
 
+// Model orchestration headers
+#include <tuvx/model/model_config.hpp>
+#include <tuvx/model/model_output.hpp>
+#include <tuvx/model/tuv_model.hpp>
+
 // Version information
 #include <tuvx/version.hpp>

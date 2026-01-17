@@ -26,6 +26,9 @@ namespace tuvx
   class Grid
   {
    public:
+    /// @brief Default constructor - creates an empty grid
+    Grid() = default;
+
     /// @brief Construct a grid from edge values
     /// @param spec Grid specification (name, units, n_cells)
     /// @param edges Vector of edge values (must have n_cells + 1 elements)
