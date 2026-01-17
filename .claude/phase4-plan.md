@@ -8,37 +8,37 @@ Create the main TUV model class that orchestrates all components into a complete
 
 ```
 TuvModel
-├── Configuration (grids, options)
-├── Warehouses
-│   ├── GridWarehouse (wavelength, altitude)
-│   ├── ProfileWarehouse (T, p, O3, air density, etc.)
-│   ├── CrossSectionWarehouse
-│   ├── QuantumYieldWarehouse
-│   └── RadiatorWarehouse
-├── Components
-│   ├── SolarPosition
-│   ├── ExtraterrestrialFlux
-│   ├── SurfaceAlbedo
-│   ├── SphericalGeometry
-│   └── Solver (DeltaEddington)
-└── Output
-    ├── RadiationField
-    └── PhotolysisRates
+  Configuration: grids, options
+  Warehouses:
+    - GridWarehouse (wavelength, altitude)
+    - ProfileWarehouse (T, p, O3, air density, etc.)
+    - CrossSectionWarehouse
+    - QuantumYieldWarehouse
+    - RadiatorWarehouse
+  Components:
+    - SolarPosition
+    - ExtraterrestrialFlux
+    - SurfaceAlbedo
+    - SphericalGeometry
+    - Solver (DeltaEddington)
+  Output:
+    - RadiationField
+    - PhotolysisRates
 ```
 
 ## New Files
 
 ```
 include/tuvx/
-├── model/
-│   ├── tuv_model.hpp           # Main TUV model class
-│   ├── model_config.hpp        # Configuration structures
-│   └── model_output.hpp        # Output/results structures
+  model/
+    tuv_model.hpp               - Main TUV model class
+    model_config.hpp            - Configuration structures
+    model_output.hpp            - Output/results structures
 
 test/unit/
-└── model/
-    ├── test_tuv_model.cpp      # Model integration tests
-    └── test_model_scenarios.cpp # Scenario-based tests
+  model/
+    test_tuv_model.cpp          - Model integration tests
+    test_model_scenarios.cpp    - Scenario-based tests
 ```
 
 ## Key Classes

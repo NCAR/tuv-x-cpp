@@ -19,35 +19,35 @@ Phase 3 implements the core radiative transfer subsystem that calculates atmosph
 
 ```
 include/tuvx/
-├── cross_section/
-│   ├── cross_section.hpp              # Base CrossSection class
-│   ├── cross_section_warehouse.hpp    # Collection manager
-│   ├── cross_section_factory.hpp      # Factory for creating from config
-│   ├── temperature_based.hpp          # Temperature-dependent base
-│   └── types/
-│       ├── o3.hpp                     # O3 cross-section
-│       ├── no2.hpp                    # NO2 cross-section
-│       ├── base.hpp                   # Simple lookup table
-│       └── rayleigh.hpp               # Rayleigh scattering
-├── quantum_yield/
-│   ├── quantum_yield.hpp              # Base QuantumYield class
-│   ├── quantum_yield_warehouse.hpp    # Collection manager
-│   ├── quantum_yield_factory.hpp      # Factory for creating from config
-│   └── types/
-│       ├── base.hpp                   # Simple constant/lookup
-│       ├── o3_o1d.hpp                 # O3 -> O(1D) + O2
-│       └── temperature_based.hpp      # Temperature-dependent
-└── util/
-    └── data_reader.hpp                # NetCDF/CSV data file reading
+  cross_section/
+    cross_section.hpp              - Base CrossSection class
+    cross_section_warehouse.hpp    - Collection manager
+    cross_section_factory.hpp      - Factory for creating from config
+    temperature_based.hpp          - Temperature-dependent base
+    types/
+      o3.hpp                       - O3 cross-section
+      no2.hpp                      - NO2 cross-section
+      base.hpp                     - Simple lookup table
+      rayleigh.hpp                 - Rayleigh scattering
+  quantum_yield/
+    quantum_yield.hpp              - Base QuantumYield class
+    quantum_yield_warehouse.hpp    - Collection manager
+    quantum_yield_factory.hpp      - Factory for creating from config
+    types/
+      base.hpp                     - Simple constant/lookup
+      o3_o1d.hpp                   - O3 -> O(1D) + O2
+      temperature_based.hpp        - Temperature-dependent
+  util/
+    data_reader.hpp                - NetCDF/CSV data file reading
 
 test/unit/
-├── cross_section/
-│   ├── test_cross_section.cpp
-│   ├── test_cross_section_warehouse.cpp
-│   └── test_cross_section_o3.cpp
-└── quantum_yield/
-    ├── test_quantum_yield.cpp
-    └── test_quantum_yield_warehouse.cpp
+  cross_section/
+    test_cross_section.cpp
+    test_cross_section_warehouse.cpp
+    test_cross_section_o3.cpp
+  quantum_yield/
+    test_quantum_yield.cpp
+    test_quantum_yield_warehouse.cpp
 ```
 
 ## Key Classes
@@ -200,24 +200,24 @@ class CrossSectionWarehouse
 
 ```
 include/tuvx/
-├── radiator/
-│   ├── radiator.hpp                   # Base Radiator class
-│   ├── radiator_state.hpp             # Optical properties state
-│   ├── radiator_warehouse.hpp         # Collection manager
-│   └── types/
-│       ├── from_cross_section.hpp     # Molecular absorber
-│       ├── aerosol.hpp                # Aerosol radiator
-│       └── rayleigh.hpp               # Rayleigh scattering
-└── radiation_field/
-    └── radiation_field.hpp            # Computed radiation quantities
+  radiator/
+    radiator.hpp                   - Base Radiator class
+    radiator_state.hpp             - Optical properties state
+    radiator_warehouse.hpp         - Collection manager
+    types/
+      from_cross_section.hpp       - Molecular absorber
+      aerosol.hpp                  - Aerosol radiator
+      rayleigh.hpp                 - Rayleigh scattering
+  radiation_field/
+    radiation_field.hpp            - Computed radiation quantities
 
 test/unit/
-├── radiator/
-│   ├── test_radiator.cpp
-│   ├── test_radiator_state.cpp
-│   └── test_radiator_warehouse.cpp
-└── radiation_field/
-    └── test_radiation_field.cpp
+  radiator/
+    test_radiator.cpp
+    test_radiator_state.cpp
+    test_radiator_warehouse.cpp
+  radiation_field/
+    test_radiation_field.cpp
 ```
 
 ## Key Classes
@@ -330,19 +330,19 @@ class RadiationField
 
 ```
 include/tuvx/
-├── solver/
-│   ├── solver.hpp                     # Abstract solver interface
-│   ├── delta_eddington.hpp            # Two-stream solver
-│   └── spherical_geometry.hpp         # Slant path calculations
-└── util/
-    └── linear_algebra.hpp             # Tridiagonal solver
+  solver/
+    solver.hpp                     - Abstract solver interface
+    delta_eddington.hpp            - Two-stream solver
+    spherical_geometry.hpp         - Slant path calculations
+  util/
+    linear_algebra.hpp             - Tridiagonal solver
 
 test/unit/
-├── solver/
-│   ├── test_delta_eddington.cpp
-│   └── test_spherical_geometry.cpp
-└── util/
-    └── test_linear_algebra.cpp
+  solver/
+    test_delta_eddington.cpp
+    test_spherical_geometry.cpp
+  util/
+    test_linear_algebra.cpp
 ```
 
 ## Key Classes
@@ -481,22 +481,22 @@ namespace linear_algebra
 
 ```
 include/tuvx/
-├── output/
-│   ├── photolysis_rate.hpp            # J-value calculator
-│   ├── photolysis_rate_warehouse.hpp  # Collection of reactions
-│   ├── dose_rate.hpp                  # UV dose calculator
-│   ├── spectral_weight.hpp            # Weighting functions
-│   └── spectral_weight_warehouse.hpp  # Collection of weights
-└── special/
-    └── lyman_alpha_sr_bands.hpp       # O2 band corrections
+  output/
+    photolysis_rate.hpp            - J-value calculator
+    photolysis_rate_warehouse.hpp  - Collection of reactions
+    dose_rate.hpp                  - UV dose calculator
+    spectral_weight.hpp            - Weighting functions
+    spectral_weight_warehouse.hpp  - Collection of weights
+  special/
+    lyman_alpha_sr_bands.hpp       - O2 band corrections
 
 test/unit/
-├── output/
-│   ├── test_photolysis_rate.cpp
-│   ├── test_dose_rate.cpp
-│   └── test_spectral_weight.cpp
-└── special/
-    └── test_lyman_alpha_sr_bands.cpp
+  output/
+    test_photolysis_rate.cpp
+    test_dose_rate.cpp
+    test_spectral_weight.cpp
+  special/
+    test_lyman_alpha_sr_bands.cpp
 ```
 
 ## Key Classes

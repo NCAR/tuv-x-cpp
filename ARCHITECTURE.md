@@ -119,66 +119,64 @@ TUV-x-cpp/
 ### Complete System (Current State)
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              TuvModel (Phase 4)                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │  ModelConfig                    ModelOutput                             │ │
-│  │  - Wavelength/altitude grids    - RadiationField                       │ │
-│  │  - Solar parameters             - Photolysis rates (J-values)          │ │
-│  │  - Atmospheric profiles         - Metadata (SZA, day, etc.)            │ │
-│  │  - Surface properties           - Accessor methods                     │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│                                      │                                       │
-│  ┌───────────────────────────────────┴────────────────────────────────────┐ │
-│  │                     Radiative Transfer (Phase 3D)                       │ │
-│  │  ┌──────────────────────┐  ┌─────────────────────────────────────────┐ │ │
-│  │  │   DeltaEddington     │  │         PhotolysisRateSet               │ │ │
-│  │  │   - Two-stream RT    │  │  - J = ∫ F(λ) × σ(λ) × φ(λ) dλ         │ │ │
-│  │  │   - Direct/diffuse   │  │  - Multiple reactions                   │ │ │
-│  │  │   - Surface reflect  │  │  - Altitude profiles                    │ │ │
-│  │  └──────────────────────┘  └─────────────────────────────────────────┘ │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│                                      │                                       │
-│  ┌───────────────────────────────────┴────────────────────────────────────┐ │
-│  │                    Supporting Components (Phase 3B-C)                   │ │
-│  │  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  ┌───────────┐ │ │
-│  │  │  Radiators  │  │  SolarFlux   │  │  Spherical     │  │  Surface  │ │ │
-│  │  │  - Optical  │  │  - ASTM E490 │  │  Geometry      │  │  Albedo   │ │ │
-│  │  │    depth    │  │  - Position  │  │  - Slant paths │  │  - λ-dep  │ │ │
-│  │  │  - SSA, g   │  │  - Day/time  │  │  - Chapman fn  │  │  - Types  │ │ │
-│  │  └─────────────┘  └──────────────┘  └────────────────┘  └───────────┘ │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│                                      │                                       │
-│  ┌───────────────────────────────────┴────────────────────────────────────┐ │
-│  │                  Cross-Sections & Quantum Yields (Phase 3A)             │ │
-│  │  ┌──────────────────────────────┐  ┌─────────────────────────────────┐ │ │
-│  │  │       CrossSection           │  │        QuantumYield             │ │ │
-│  │  │  - BaseCrossSection          │  │  - ConstantQuantumYield         │ │ │
-│  │  │  - O3CrossSection (T-dep)    │  │  - O3O1DQuantumYield (T-dep)    │ │ │
-│  │  │  - CrossSectionWarehouse     │  │  - QuantumYieldWarehouse        │ │ │
-│  │  └──────────────────────────────┘  └─────────────────────────────────┘ │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│                                      │                                       │
-│  ┌───────────────────────────────────┴────────────────────────────────────┐ │
-│  │                     Data Structures (Phase 2)                           │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────────────┐  │ │
-│  │  │    Grids     │  │   Profiles   │  │      Interpolation          │  │ │
-│  │  │  - Wavelength│  │  - T, p, ρ   │  │  - Linear                   │  │ │
-│  │  │  - Altitude  │  │  - O3, O2    │  │  - Area-conserving          │  │ │
-│  │  │  - Warehouse │  │  - Warehouse │  │  - Interpolator concept     │  │ │
-│  │  └──────────────┘  └──────────────┘  └─────────────────────────────┘  │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│                                      │                                       │
-│  ┌───────────────────────────────────┴────────────────────────────────────┐ │
-│  │                        Utilities (Phase 1)                              │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────────┐ │ │
-│  │  │  Constants  │  │   Errors    │  │       Array Utilities           │ │ │
-│  │  │  - Physical │  │  - Codes    │  │  - FindString, AlmostEqual      │ │ │
-│  │  │  - Math     │  │  - Categor. │  │  - Linspace, Logspace           │ │ │
-│  │  │  - Atmos.   │  │  - Except.  │  │  - MergeSorted, Interpolate     │ │ │
-│  │  └─────────────┘  └─────────────┘  └─────────────────────────────────┘ │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
+TuvModel (Phase 4)
+====================
+
+  ModelConfig                         ModelOutput
+  - Wavelength/altitude grids         - RadiationField
+  - Solar parameters                  - Photolysis rates (J-values)
+  - Atmospheric profiles              - Metadata (SZA, day, etc.)
+  - Surface properties                - Accessor methods
+
+                        |
+                        v
+
+  Radiative Transfer (Phase 3D)
+  -------------------------------
+  DeltaEddington                      PhotolysisRateSet
+  - Two-stream RT                     - J = integral F(l) x s(l) x f(l) dl
+  - Direct/diffuse                    - Multiple reactions
+  - Surface reflect                   - Altitude profiles
+
+                        |
+                        v
+
+  Supporting Components (Phase 3B-C)
+  ------------------------------------
+  Radiators       SolarFlux       SphericalGeometry     SurfaceAlbedo
+  - Optical       - ASTM E490     - Slant paths         - lambda-dep
+    depth         - Position      - Chapman fn          - Types
+  - SSA, g        - Day/time
+
+                        |
+                        v
+
+  Cross-Sections & Quantum Yields (Phase 3A)
+  --------------------------------------------
+  CrossSection                        QuantumYield
+  - BaseCrossSection                  - ConstantQuantumYield
+  - O3CrossSection (T-dep)            - O3O1DQuantumYield (T-dep)
+  - CrossSectionWarehouse             - QuantumYieldWarehouse
+
+                        |
+                        v
+
+  Data Structures (Phase 2)
+  ---------------------------
+  Grids           Profiles            Interpolation
+  - Wavelength    - T, p, rho         - Linear
+  - Altitude      - O3, O2            - Area-conserving
+  - Warehouse     - Warehouse         - Interpolator concept
+
+                        |
+                        v
+
+  Utilities (Phase 1)
+  ---------------------
+  Constants       Errors              Array Utilities
+  - Physical      - Codes             - FindString, AlmostEqual
+  - Math          - Categor.          - Linspace, Logspace
+  - Atmos.        - Except.           - MergeSorted, Interpolate
 ```
 
 ## Error Handling
@@ -237,14 +235,14 @@ try {
 | 3C | **Complete** | Solar position, surface albedo, spherical geometry |
 | 3D | **Complete** | Delta-Eddington solver, photolysis rate calculator |
 | 4 | **Complete** | Model orchestration (TuvModel, ModelConfig, ModelOutput) |
-| 5 | Planned | Numerical validation against TUV-x Fortran |
+| 5 | **In Progress** | Numerical validation against TUV-x Fortran |
 | 6 | Planned | Additional cross-section/quantum yield types |
 | 7 | Planned | C/Fortran interfaces |
 | 8 | Planned | Performance optimization, SIMD/OpenMP |
 
 ## Current Test Coverage
 
-**493 tests passing** across all components:
+**519 tests passing** across all components:
 - Utility tests (constants, errors, arrays)
 - Grid tests (construction, operations, warehouse)
 - Profile tests (construction, operations, warehouse)
@@ -259,6 +257,7 @@ try {
 - Solver tests (Delta-Eddington)
 - Photolysis tests
 - Model tests (TuvModel, scenarios)
+- Validation tests (Delta-Eddington benchmarks)
 
 ## Key Implementation Notes
 

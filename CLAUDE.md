@@ -6,6 +6,13 @@ TUV-x C++ is a modern C++20 translation of the TUV-x (Tropospheric Ultraviolet-V
 
 **Reference project**: `/Users/fillmore/EarthSystem/MICM` - consult this for coding style questions.
 
+## Agent Setup
+
+At the start of each session, read these files for full context:
+- `ARCHITECTURE.md` - Component diagram and design philosophy
+- `TODO.md` - Prioritized next steps and known issues
+- `NUMERICAL-TESTS.md` - Validation test specifications
+
 ## Build Commands
 
 ```bash
@@ -165,7 +172,7 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 - [ ] Phase 6: Additional cross-section/quantum yield types
 - [ ] Phase 7: C/Fortran interfaces
 
-**Current test count**: 493 tests passing
+**Current test count**: 519 tests passing
 
 ## Key Files for Context
 
