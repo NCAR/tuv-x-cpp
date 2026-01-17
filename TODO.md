@@ -8,6 +8,38 @@
 
 ---
 
+## Project Objectives
+
+### Primary Goals
+
+1. **Feature parity with TUV-x Fortran** - Implement all photolysis reactions and radiative
+   transfer capabilities from the reference Fortran implementation (`/Users/fillmore/EarthSystem/TUV-x`).
+   This includes:
+   - 69 photolysis reactions with validated cross-sections and quantum yields
+   - 28 dose rate calculations
+   - High-resolution spectral data (0.01 nm resolution for O3, Schumann-Runge bands for O2)
+   - Multiple solver options beyond Delta-Eddington
+
+2. **MUSICA API integration** - Provide a C++ photolysis module compatible with the
+   [MUSICA](https://github.com/NCAR/musica) (Multi-Scale Infrastructure for Chemistry and Aerosols)
+   ecosystem. The library should:
+   - Follow MICM coding patterns and namespace conventions (`musica::tuvx`)
+   - Provide C and Fortran bindings via ISO_C_BINDING
+   - Support runtime configuration for atmospheric chemistry models
+   - Enable coupling with MICM for chemistry-photolysis feedback
+
+3. **Header-only, dependency-free design** - Maintain portability and ease of integration
+   by embedding all spectral data and requiring no external files at runtime.
+
+### Success Criteria
+
+- Photolysis rates (J-values) match TUV-x Fortran within RMS < 1e-6, max < 1e-5
+- Full test coverage for all implemented reactions
+- Documentation and examples for MUSICA integration
+- Performance competitive with Fortran implementation
+
+---
+
 ## Design Philosophy
 
 **Header-only library with embedded data** - no external file dependencies.
