@@ -227,24 +227,24 @@ From `xsqy.compare.json` and `sw.compare.json`:
 
 ### 3.6 Implementation Roadmap
 
-**Phase A: Infrastructure**
+**Infrastructure**
 - [ ] Copy reference NetCDF files to `test/data/fortran_reference/`
 - [ ] Implement NetCDF reader for reference data
 - [ ] Create comparison utility class
 - [ ] Set up parameterized test framework
 
-**Phase B: Radiation Field Validation**
+**Radiation Field Validation**
 - [ ] Import USSA atmosphere profiles
 - [ ] Configure identical radiator stack (air, O2, O3, aerosols)
 - [ ] Compare actinic flux profiles at 5 SZAs
 - [ ] Compare direct/diffuse irradiance
 
-**Phase C: Photolysis Rate Validation**
+**Photolysis Rate Validation**
 - [ ] Implement priority cross-sections (8 reactions)
 - [ ] Compare J-values against photo_rates.nc
 - [ ] Extend to full 69 reactions
 
-**Phase D: Dose Rate Validation**
+**Dose Rate Validation**
 - [ ] Implement spectral weight functions
 - [ ] Compare dose rates against dose_rates.nc
 
