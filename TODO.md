@@ -3,7 +3,7 @@
 ## Project Status
 
 **Current State**: Phase 5 In Progress - Numerical validation
-**Tests**: 519 passing
+**Tests**: 524 passing
 **Branch**: develop
 
 ---
@@ -50,8 +50,10 @@
 - [x] `ModelConfig` - comprehensive configuration
 - [x] `ModelOutput` - results with accessor methods
 - [x] `TuvModel` - main orchestration class
-- [x] `StandardAtmosphere` - US Standard Atmosphere 1976 profiles
+- [x] `StandardAtmosphere` - US Standard Atmosphere 1976 profiles (T, P, ρ, O3)
 - [x] Scenario tests (clear sky, SZA dependence, polar, etc.)
+- [x] O3 radiator integration with `AddO3Radiator()` convenience method
+- [x] O3 radiator scenario tests (UV attenuation, altitude/SZA dependence)
 
 ---
 
@@ -136,12 +138,11 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 - [ ] Load from JPL/IUPAC data files
 
 ### Phase 7: Radiator Integration (Medium Priority)
-Currently the model runs with an "empty atmosphere". Need to:
-- [ ] Implement O3 radiator with real O3 profile
+- [x] Wire radiators into TuvModel.Calculate()
+- [x] Implement O3 radiator with Chapman layer O3 profile
 - [ ] Implement O2 radiator (Schumann-Runge)
 - [ ] Implement Rayleigh scattering radiator
 - [ ] Implement aerosol radiator
-- [ ] Wire radiators into TuvModel.Calculate()
 
 ### Phase 8: C/Fortran Interfaces (Medium Priority)
 - [ ] C API wrapper (`tuvx_c.h`)
@@ -164,19 +165,19 @@ Currently the model runs with an "empty atmosphere". Need to:
 
 ## Known Issues & Technical Debt
 
-### Empty Atmosphere Behavior
-The current TuvModel calculates through an empty atmosphere (no radiators configured). Tests have been relaxed to accommodate this. When radiators are properly integrated:
-- Re-enable strict altitude dependence tests
-- Re-enable SZA dependence tests
-- Verify J-value increases with altitude
+### O3 Radiator Integration (Completed)
+O3 radiator is now integrated and working. The following physical behaviors are validated:
+- UV-B more attenuated than UV-A
+- Flux decreases from TOA to surface
+- J-values increase with altitude
+- Attenuation increases with SZA
+- Ozone column affects UV-B attenuation
 
-### Test Relaxations
-These tests are relaxed pending full radiator integration:
-- `ClearSkyScenario.FluxDecreaseWithDepth` - expects TOA > surface
-- `ClearSkyScenario.UVAttenuation` - expects UV-B more attenuated
-- `SZADependenceScenario.CosineApproximation` - expects cos(SZA) dependence
-- `O3PhotolysisScenario.JValueIncreasesWithAltitude` - expects altitude dependence
-- `O3PhotolysisScenario.JValueDecreasesWithSZA` - expects SZA dependence
+### Default vs O3-Enabled Behavior
+By default, TuvModel calculates through an empty atmosphere (for backward compatibility).
+To enable realistic O3 absorption, call `model.AddO3Radiator()` after construction.
+The original ClearSkyScenario tests remain relaxed (empty atmosphere), while new
+O3RadiatorScenario tests verify the full physical behavior.
 
 ### API Improvements
 - [ ] Consider builder pattern for ModelConfig
@@ -205,16 +206,22 @@ ctest --output-on-failure
 ### Example Usage
 ```cpp
 #include <tuvx/model/tuv_model.hpp>
+#include <tuvx/cross_section/types/o3.hpp>
+#include <tuvx/quantum_yield/types/o3_o1d.hpp>
 
 tuvx::ModelConfig config;
 config.solar_zenith_angle = 30.0;
 config.n_wavelength_bins = 100;
 config.n_altitude_layers = 80;
+config.ozone_column_DU = 300.0;  // Total ozone column
 
 tuvx::TuvModel model(config);
 model.UseStandardAtmosphere();
+model.AddO3Radiator();  // Enable O3 absorption
 
 // Add photolysis reaction
+tuvx::O3CrossSection o3_xs;
+tuvx::O3O1DQuantumYield o3_qy;
 model.AddPhotolysisReaction("O3 -> O2 + O(1D)", &o3_xs, &o3_qy);
 
 // Calculate

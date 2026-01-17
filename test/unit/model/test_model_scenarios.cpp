@@ -424,3 +424,135 @@ TEST(MultipleReactionsScenario, IndependentCalculations)
   // VIS should be larger (more flux at longer wavelengths, less attenuation)
   EXPECT_GT(j_vis, j_uv);
 }
+
+// ============================================================================
+// Scenario: O3 Radiator Integration
+// ============================================================================
+
+class O3RadiatorScenario : public ::testing::Test
+{
+ protected:
+  void SetUp() override
+  {
+    config.solar_zenith_angle = 30.0;
+    config.n_wavelength_bins = 50;
+    config.wavelength_min = 280.0;
+    config.wavelength_max = 400.0;
+    config.n_altitude_layers = 40;
+    config.altitude_min = 0.0;
+    config.altitude_max = 80.0;
+    config.surface_albedo = 0.1;
+    config.ozone_column_DU = 300.0;  // Standard ozone column
+
+    model = std::make_unique<TuvModel>(config);
+    model->UseStandardAtmosphere();
+    model->AddO3Radiator();  // Enable O3 absorption
+  }
+
+  ModelConfig config;
+  std::unique_ptr<TuvModel> model;
+};
+
+TEST_F(O3RadiatorScenario, UVBMoreAttenuatedThanUVA)
+{
+  auto output = model->Calculate();
+
+  // Get UV-B (280-315 nm) and UV-A (315-400 nm) flux at TOA and surface
+  double uvb_toa = output.GetUVBActinicFlux(output.NumberOfLevels() - 1);
+  double uvb_surface = output.GetUVBActinicFlux(0);
+  double uva_toa = output.GetUVAActinicFlux(output.NumberOfLevels() - 1);
+  double uva_surface = output.GetUVAActinicFlux(0);
+
+  // All should be positive
+  EXPECT_GT(uvb_toa, 0.0);
+  EXPECT_GT(uvb_surface, 0.0);
+  EXPECT_GT(uva_toa, 0.0);
+  EXPECT_GT(uva_surface, 0.0);
+
+  // UV-B should be more attenuated than UV-A
+  // Attenuation ratio = surface / TOA
+  double uvb_ratio = uvb_surface / uvb_toa;
+  double uva_ratio = uva_surface / uva_toa;
+
+  // UV-B ratio should be smaller (more attenuated)
+  EXPECT_LT(uvb_ratio, uva_ratio);
+}
+
+TEST_F(O3RadiatorScenario, FluxDecreasesWithDepth)
+{
+  auto output = model->Calculate();
+
+  // Total actinic flux should decrease from TOA to surface
+  double flux_toa = output.GetIntegratedActinicFlux(output.NumberOfLevels() - 1);
+  double flux_mid = output.GetIntegratedActinicFlux(output.NumberOfLevels() / 2);
+  double flux_surface = output.GetIntegratedActinicFlux(0);
+
+  EXPECT_GT(flux_toa, 0.0);
+  EXPECT_GT(flux_mid, 0.0);
+  EXPECT_GT(flux_surface, 0.0);
+
+  // Flux should decrease going down through atmosphere
+  EXPECT_GT(flux_toa, flux_mid);
+  EXPECT_GT(flux_mid, flux_surface);
+}
+
+TEST_F(O3RadiatorScenario, JValueIncreasesWithAltitude)
+{
+  // Set up O3 photolysis reaction
+  O3CrossSection o3_xs;
+  O3O1DQuantumYield o3_qy;
+  model->AddPhotolysisReaction("O3 -> O2 + O(1D)", &o3_xs, &o3_qy);
+
+  auto output = model->Calculate();
+
+  auto j_profile = output.GetPhotolysisRateProfile("O3 -> O2 + O(1D)");
+
+  // J should increase from surface to TOA (more flux above the ozone layer)
+  double j_surface = j_profile.front();
+  double j_toa = j_profile.back();
+
+  EXPECT_GT(j_surface, 0.0);
+  EXPECT_GT(j_toa, j_surface);
+}
+
+TEST_F(O3RadiatorScenario, AttenuationIncreasesWithSZA)
+{
+  // At higher SZA, optical path through O3 is longer, so more attenuation
+  auto output_0 = model->Calculate(0.0);
+  auto output_60 = model->Calculate(60.0);
+  auto output_80 = model->Calculate(80.0);
+
+  double flux_0 = output_0.GetIntegratedActinicFlux(0);
+  double flux_60 = output_60.GetIntegratedActinicFlux(0);
+  double flux_80 = output_80.GetIntegratedActinicFlux(0);
+
+  // Flux should decrease as SZA increases (longer optical path)
+  EXPECT_GT(flux_0, flux_60);
+  EXPECT_GT(flux_60, flux_80);
+}
+
+TEST_F(O3RadiatorScenario, OzoneColumnAffectsAttenuation)
+{
+  // Low ozone
+  ModelConfig low_o3_config = config;
+  low_o3_config.ozone_column_DU = 200.0;
+  TuvModel model_low(low_o3_config);
+  model_low.UseStandardAtmosphere();
+  model_low.AddO3Radiator();
+
+  // High ozone
+  ModelConfig high_o3_config = config;
+  high_o3_config.ozone_column_DU = 400.0;
+  TuvModel model_high(high_o3_config);
+  model_high.UseStandardAtmosphere();
+  model_high.AddO3Radiator();
+
+  auto output_low = model_low.Calculate();
+  auto output_high = model_high.Calculate();
+
+  double uvb_low = output_low.GetUVBActinicFlux(0);
+  double uvb_high = output_high.GetUVBActinicFlux(0);
+
+  // More ozone should mean less UV-B at surface
+  EXPECT_GT(uvb_low, uvb_high);
+}

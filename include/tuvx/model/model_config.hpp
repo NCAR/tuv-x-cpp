@@ -92,8 +92,11 @@ namespace tuvx
     /// Air density profile at layer midpoints [molecules/cm³]
     std::vector<double> air_density_profile{};
 
-    /// Ozone column density profile [molecules/cm²] per layer
+    /// Ozone number density profile at layer midpoints [molecules/cm³]
     std::vector<double> ozone_profile{};
+
+    /// Total ozone column [Dobson Units] for standard atmosphere profile
+    double ozone_column_DU{ 300.0 };
 
     // ========================================================================
     // Solver Options
@@ -312,6 +315,53 @@ namespace tuvx
         densities.push_back(AirDensity(T, P));
       }
       return densities;
+    }
+
+    /// Ozone number density [molecules/cm³] using Chapman layer approximation
+    /// @param altitude_km Altitude in kilometers
+    /// @param total_column_DU Total ozone column in Dobson Units (default 300 DU)
+    /// @return O3 number density at given altitude
+    ///
+    /// Uses a Chapman layer profile with peak around 22 km.
+    /// Reference: Based on US Standard Atmosphere ozone profile.
+    inline double OzoneDensity(double altitude_km, double total_column_DU = 300.0)
+    {
+      // Chapman layer parameters for typical mid-latitude ozone
+      constexpr double z_max = 22.0;    // Peak altitude [km]
+      constexpr double H = 4.5;         // Scale height [km]
+
+      // Normalized Chapman layer profile
+      double z_norm = (altitude_km - z_max) / H;
+      double profile = std::exp(1.0 - z_norm - std::exp(-z_norm));
+
+      // Scale factor to match total column
+      // 1 DU = 2.687e16 molecules/cm²
+      // Integrate Chapman layer: integral ≈ H * sqrt(2*pi*e) ≈ H * 4.13
+      constexpr double DU_to_molec_cm2 = 2.687e16;
+      constexpr double chapman_integral_factor = 4.13;
+      double column_molec_cm2 = total_column_DU * DU_to_molec_cm2;
+
+      // Peak density to match column
+      double n_max = column_molec_cm2 / (H * 1e5 * chapman_integral_factor);  // H in cm
+
+      return n_max * profile;
+    }
+
+    /// Generate standard ozone number density profile for altitude grid
+    /// @param altitude_midpoints Altitude midpoints [km]
+    /// @param total_column_DU Total ozone column in Dobson Units (default 300 DU)
+    /// @return O3 number density profile [molecules/cm³]
+    inline std::vector<double> GenerateOzoneProfile(
+        const std::vector<double>& altitude_midpoints,
+        double total_column_DU = 300.0)
+    {
+      std::vector<double> ozone;
+      ozone.reserve(altitude_midpoints.size());
+      for (double z : altitude_midpoints)
+      {
+        ozone.push_back(OzoneDensity(z, total_column_DU));
+      }
+      return ozone;
     }
 
   }  // namespace StandardAtmosphere

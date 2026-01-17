@@ -19,6 +19,8 @@
 #include <tuvx/radiator/radiator.hpp>
 #include <tuvx/radiator/radiator_state.hpp>
 #include <tuvx/radiator/radiator_warehouse.hpp>
+#include <tuvx/radiator/types/from_cross_section.hpp>
+#include <tuvx/cross_section/types/o3.hpp>
 #include <tuvx/solar/extraterrestrial_flux.hpp>
 #include <tuvx/solar/solar_position.hpp>
 #include <tuvx/solver/delta_eddington.hpp>
@@ -163,6 +165,7 @@ namespace tuvx
       config_.temperature_profile = StandardAtmosphere::GenerateTemperatureProfile(midpoints);
       config_.pressure_profile = StandardAtmosphere::GeneratePressureProfile(midpoints);
       config_.air_density_profile = StandardAtmosphere::GenerateAirDensityProfile(midpoints);
+      config_.ozone_profile = StandardAtmosphere::GenerateOzoneProfile(midpoints, config_.ozone_column_DU);
       return *this;
     }
 
@@ -199,6 +202,28 @@ namespace tuvx
     TuvModel& AddRadiator(const Radiator& radiator)
     {
       radiators_.Add(radiator.Clone());
+      return *this;
+    }
+
+    /// @brief Add ozone (O3) as a radiator using default cross-sections
+    ///
+    /// This convenience method creates an O3 radiator using the JPL-19
+    /// recommended cross-sections with temperature dependence. The O3
+    /// number density profile is taken from config_.ozone_profile or
+    /// generated from StandardAtmosphere using config_.ozone_column_DU.
+    ///
+    /// @return Reference to this model for chaining
+    TuvModel& AddO3Radiator()
+    {
+      auto o3_radiator = std::make_unique<FromCrossSectionRadiator>(
+          "O3",
+          std::make_unique<O3CrossSection>(),
+          "O3",          // density profile name
+          "temperature", // temperature profile name
+          "wavelength",  // wavelength grid name
+          "altitude"     // altitude grid name
+      );
+      radiators_.Add(std::move(o3_radiator));
       return *this;
     }
 
@@ -283,23 +308,61 @@ namespace tuvx
         surface_albedo.assign(n_wavelengths, config_.surface_albedo);
       }
 
-      // Combine radiator states
-      RadiatorState combined_state;
-      combined_state.Initialize(n_layers, n_wavelengths);
+      // Get altitude midpoints for profile generation
+      auto midpoints_span = altitude_grid_.Midpoints();
+      std::vector<double> midpoints_vec(midpoints_span.begin(), midpoints_span.end());
 
       // Get temperature profile for cross-section calculations
       std::vector<double> temperatures = config_.temperature_profile;
       if (temperatures.empty())
       {
-        // Use standard atmosphere if no profile provided
-        auto midpoints = altitude_grid_.Midpoints();
-        std::vector<double> midpoints_vec(midpoints.begin(), midpoints.end());
         temperatures = StandardAtmosphere::GenerateTemperatureProfile(midpoints_vec);
       }
 
-      // Note: Radiator integration is simplified for now
-      // Full implementation would update radiators and combine their states
-      // For now, we just use an empty atmosphere (no absorption/scattering)
+      // Get air density profile
+      std::vector<double> air_density = config_.air_density_profile;
+      if (air_density.empty())
+      {
+        air_density = StandardAtmosphere::GenerateAirDensityProfile(midpoints_vec);
+      }
+
+      // Get ozone profile
+      std::vector<double> ozone = config_.ozone_profile;
+      if (ozone.empty())
+      {
+        ozone = StandardAtmosphere::GenerateOzoneProfile(midpoints_vec, config_.ozone_column_DU);
+      }
+
+      // Combine radiator states
+      RadiatorState combined_state;
+      combined_state.Initialize(n_layers, n_wavelengths);
+
+      // Update radiators if any are configured
+      if (!radiators_.Empty())
+      {
+        // Create grid warehouse
+        GridWarehouse grids;
+        grids.Add(wavelength_grid_);
+        grids.Add(altitude_grid_);
+
+        // Create profile warehouse with atmospheric profiles
+        ProfileWarehouse profiles;
+        profiles.Add(Profile(
+            ProfileSpec{ "temperature", "K", n_layers },
+            temperatures));
+        profiles.Add(Profile(
+            ProfileSpec{ "air_density", "molecules/cm^3", n_layers },
+            air_density));
+        profiles.Add(Profile(
+            ProfileSpec{ "O3", "molecules/cm^3", n_layers },
+            ozone));
+
+        // Update all radiators with current atmospheric state
+        radiators_.UpdateAll(grids, profiles);
+
+        // Get combined optical properties from all radiators
+        combined_state = radiators_.CombinedState();
+      }
 
       // Set up solver input
       SolverInput solver_input;

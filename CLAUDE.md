@@ -172,7 +172,7 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 - [ ] Phase 6: Additional cross-section/quantum yield types
 - [ ] Phase 7: C/Fortran interfaces
 
-**Current test count**: 519 tests passing
+**Current test count**: 524 tests passing
 
 ## Key Files for Context
 
@@ -185,11 +185,15 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 - **Architecture**: `ARCHITECTURE.md` - Full component diagram
 - **Numerical tests**: `NUMERICAL-TESTS.md` - Validation test specifications
 
-## Current Limitations
+## Radiator Integration
 
-The model currently runs with an "empty atmosphere" (no radiators configured by default):
-- Actinic flux is approximately constant with altitude
-- No SZA dependence in attenuation
-- J-values approximately constant with altitude
+O3 radiator is now integrated and working. To enable O3 absorption in calculations:
 
-Full physical behavior requires integrating radiators (O3, O2, aerosols). See TODO.md for details.
+```cpp
+tuvx::TuvModel model(config);
+model.UseStandardAtmosphere();
+model.AddO3Radiator();  // Enable O3 absorption
+```
+
+Without `AddO3Radiator()`, the model runs with an "empty atmosphere" for backward compatibility.
+Additional radiators (O2, Rayleigh, aerosols) are planned for future phases.
