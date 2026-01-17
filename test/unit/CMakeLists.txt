@@ -16,3 +16,12 @@ create_tuvx_test(test_profile_warehouse profile/test_profile_warehouse.cpp)
 # Interpolation tests
 create_tuvx_test(test_linear_interpolator interpolation/test_linear_interpolator.cpp)
 create_tuvx_test(test_conserving_interpolator interpolation/test_conserving_interpolator.cpp)
+
+# Cross-section tests
+create_tuvx_test(test_cross_section cross_section/test_cross_section.cpp)
+create_tuvx_test(test_cross_section_warehouse cross_section/test_cross_section_warehouse.cpp)
+create_tuvx_test(test_cross_section_o3 cross_section/test_cross_section_o3.cpp)
+
+# Quantum yield tests
+create_tuvx_test(test_quantum_yield quantum_yield/test_quantum_yield.cpp)
+create_tuvx_test(test_quantum_yield_warehouse quantum_yield/test_quantum_yield_warehouse.cpp)

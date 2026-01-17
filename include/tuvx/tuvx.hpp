@@ -26,5 +26,18 @@
 #include <tuvx/interpolation/linear_interpolator.hpp>
 #include <tuvx/interpolation/conserving_interpolator.hpp>
 
+// Cross-section headers
+#include <tuvx/cross_section/cross_section.hpp>
+#include <tuvx/cross_section/temperature_based.hpp>
+#include <tuvx/cross_section/cross_section_warehouse.hpp>
+#include <tuvx/cross_section/types/base.hpp>
+#include <tuvx/cross_section/types/o3.hpp>
+
+// Quantum yield headers
+#include <tuvx/quantum_yield/quantum_yield.hpp>
+#include <tuvx/quantum_yield/quantum_yield_warehouse.hpp>
+#include <tuvx/quantum_yield/types/base.hpp>
+#include <tuvx/quantum_yield/types/o3_o1d.hpp>
+
 // Version information
 #include <tuvx/version.hpp>
