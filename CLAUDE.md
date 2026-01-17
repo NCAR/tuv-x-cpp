@@ -156,5 +156,33 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 
 - [x] Phase 1: Foundation (utilities, error handling, constants)
 - [x] Phase 2: Data structures (grids, profiles, interpolation)
-- [ ] Phase 3: Radiative transfer components
-- [ ] Phase 4+: Solver implementation
+- [x] Phase 3A: Cross-sections and quantum yields
+- [x] Phase 3B: Radiators and radiation field
+- [x] Phase 3C: Solar position, surface albedo, spherical geometry
+- [x] Phase 3D: Delta-Eddington solver, photolysis rate calculator
+- [x] Phase 4: Model orchestration (TuvModel, ModelConfig, ModelOutput)
+- [ ] Phase 5: Numerical validation (see NUMERICAL-TESTS.md)
+- [ ] Phase 6: Additional cross-section/quantum yield types
+- [ ] Phase 7: C/Fortran interfaces
+
+**Current test count**: 493 tests passing
+
+## Key Files for Context
+
+- **Main model**: `include/tuvx/model/tuv_model.hpp` - TuvModel orchestration class
+- **Configuration**: `include/tuvx/model/model_config.hpp` - ModelConfig + StandardAtmosphere
+- **Output**: `include/tuvx/model/model_output.hpp` - ModelOutput with J-value accessors
+- **Solver**: `include/tuvx/solver/delta_eddington.hpp` - Two-stream RT solver
+- **Photolysis**: `include/tuvx/photolysis/photolysis_rate.hpp` - J-value calculation
+- **TODO**: `TODO.md` - Prioritized next steps
+- **Architecture**: `ARCHITECTURE.md` - Full component diagram
+- **Numerical tests**: `NUMERICAL-TESTS.md` - Validation test specifications
+
+## Current Limitations
+
+The model currently runs with an "empty atmosphere" (no radiators configured by default):
+- Actinic flux is approximately constant with altitude
+- No SZA dependence in attenuation
+- J-values approximately constant with altitude
+
+Full physical behavior requires integrating radiators (O3, O2, aerosols). See TODO.md for details.
