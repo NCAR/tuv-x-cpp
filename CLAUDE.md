@@ -172,7 +172,7 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 - [ ] Phase 6: Additional cross-section/quantum yield types
 - [ ] Phase 7: C/Fortran interfaces
 
-**Current test count**: 524 tests passing
+**Current test count**: 531 tests passing
 
 ## Key Files for Context
 
@@ -187,13 +187,18 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 
 ## Radiator Integration
 
-O3 radiator is now integrated and working. To enable O3 absorption in calculations:
+All major radiators are now integrated. Available radiators:
+- **O3** - Ozone absorption with temperature-dependent cross-sections
+- **O2** - Oxygen absorption (Schumann-Runge bands)
+- **Rayleigh** - Molecular scattering (λ^-4 dependence, ω=1, g=0)
+- **Aerosol** - Configurable aerosol (Ångström parameterization)
 
+Usage:
 ```cpp
 tuvx::TuvModel model(config);
 model.UseStandardAtmosphere();
-model.AddO3Radiator();  // Enable O3 absorption
+model.AddStandardRadiators();  // O3 + O2 + Rayleigh
+model.AddAerosolRadiator();    // Optional: add aerosols
 ```
 
-Without `AddO3Radiator()`, the model runs with an "empty atmosphere" for backward compatibility.
-Additional radiators (O2, Rayleigh, aerosols) are planned for future phases.
+Without radiators, the model runs with an "empty atmosphere" for backward compatibility.

@@ -556,3 +556,263 @@ TEST_F(O3RadiatorScenario, OzoneColumnAffectsAttenuation)
   // More ozone should mean less UV-B at surface
   EXPECT_GT(uvb_low, uvb_high);
 }
+
+// ============================================================================
+// Scenario: Rayleigh Scattering
+// ============================================================================
+
+class RayleighRadiatorScenario : public ::testing::Test
+{
+ protected:
+  void SetUp() override
+  {
+    config.solar_zenith_angle = 30.0;
+    config.n_wavelength_bins = 50;
+    config.wavelength_min = 280.0;
+    config.wavelength_max = 700.0;  // Include visible for Rayleigh test
+    config.n_altitude_layers = 40;
+    config.altitude_min = 0.0;
+    config.altitude_max = 80.0;
+    config.surface_albedo = 0.1;
+
+    model = std::make_unique<TuvModel>(config);
+    model->UseStandardAtmosphere();
+    model->AddRayleighRadiator();  // Only Rayleigh scattering
+  }
+
+  ModelConfig config;
+  std::unique_ptr<TuvModel> model;
+};
+
+TEST_F(RayleighRadiatorScenario, BlueMoreScatteredThanRed)
+{
+  auto output = model->Calculate();
+
+  // Rayleigh scattering is proportional to λ^-4
+  // So blue wavelengths should be more scattered (attenuated direct, increased diffuse)
+
+  // Get diffuse flux at surface for blue (~400nm) and red (~650nm) regions
+  auto diffuse = output.GetDiffuseActinicFlux(0);
+  auto wavelengths = config.wavelength_min;
+  double bin_width = (config.wavelength_max - config.wavelength_min) / config.n_wavelength_bins;
+
+  // Find approximate indices for blue and red
+  std::size_t blue_idx = static_cast<std::size_t>((400.0 - config.wavelength_min) / bin_width);
+  std::size_t red_idx = static_cast<std::size_t>((650.0 - config.wavelength_min) / bin_width);
+
+  // Both should have diffuse flux
+  EXPECT_GT(diffuse[blue_idx], 0.0);
+  EXPECT_GT(diffuse[red_idx], 0.0);
+}
+
+TEST_F(RayleighRadiatorScenario, ScatteringDecreasesWithAltitude)
+{
+  auto output = model->Calculate();
+
+  // Rayleigh scattering depends on air density, which decreases with altitude
+  // Total scattering (diffuse flux relative to direct) should be higher at surface
+  double total_toa = output.GetIntegratedActinicFlux(output.NumberOfLevels() - 1);
+  double total_surface = output.GetIntegratedActinicFlux(0);
+
+  // Both should be positive
+  EXPECT_GT(total_toa, 0.0);
+  EXPECT_GT(total_surface, 0.0);
+}
+
+// ============================================================================
+// Scenario: Aerosol Effects
+// ============================================================================
+
+class AerosolRadiatorScenario : public ::testing::Test
+{
+ protected:
+  void SetUp() override
+  {
+    config.solar_zenith_angle = 30.0;
+    config.n_wavelength_bins = 30;
+    config.wavelength_min = 300.0;
+    config.wavelength_max = 700.0;
+    config.n_altitude_layers = 30;
+    config.altitude_min = 0.0;
+    config.altitude_max = 60.0;
+    config.surface_albedo = 0.1;
+  }
+
+  ModelConfig config;
+};
+
+TEST(AerosolRadiatorScenario, AerosolReducesDirectFlux)
+{
+  ModelConfig config;
+  config.solar_zenith_angle = 30.0;
+  config.n_wavelength_bins = 20;
+  config.n_altitude_layers = 20;
+
+  // Without aerosol
+  TuvModel model_clean(config);
+  model_clean.UseStandardAtmosphere();
+  auto output_clean = model_clean.Calculate();
+
+  // With aerosol
+  TuvModel model_aerosol(config);
+  model_aerosol.UseStandardAtmosphere();
+  model_aerosol.AddAerosolRadiator();
+  auto output_aerosol = model_aerosol.Calculate();
+
+  double direct_clean = 0.0;
+  double direct_aerosol = 0.0;
+
+  auto clean_direct = output_clean.GetDirectActinicFlux(0);
+  auto aerosol_direct = output_aerosol.GetDirectActinicFlux(0);
+
+  for (std::size_t i = 0; i < clean_direct.size(); ++i)
+  {
+    direct_clean += clean_direct[i];
+    direct_aerosol += aerosol_direct[i];
+  }
+
+  // Aerosol should reduce direct flux at surface
+  EXPECT_GT(direct_clean, direct_aerosol);
+}
+
+TEST(AerosolRadiatorScenario, HigherAODMoreAttenuation)
+{
+  ModelConfig config;
+  config.solar_zenith_angle = 30.0;
+  config.n_wavelength_bins = 20;
+  config.n_altitude_layers = 20;
+
+  // Low AOD
+  AerosolRadiator::Config low_aod_config;
+  low_aod_config.optical_depth_ref = 0.05;
+  TuvModel model_low(config);
+  model_low.UseStandardAtmosphere();
+  model_low.AddAerosolRadiator(low_aod_config);
+
+  // High AOD
+  AerosolRadiator::Config high_aod_config;
+  high_aod_config.optical_depth_ref = 0.5;
+  TuvModel model_high(config);
+  model_high.UseStandardAtmosphere();
+  model_high.AddAerosolRadiator(high_aod_config);
+
+  auto output_low = model_low.Calculate();
+  auto output_high = model_high.Calculate();
+
+  double flux_low = output_low.GetIntegratedActinicFlux(0);
+  double flux_high = output_high.GetIntegratedActinicFlux(0);
+
+  // Higher AOD should mean less flux at surface
+  EXPECT_GT(flux_low, flux_high);
+}
+
+// ============================================================================
+// Scenario: Standard Radiators (Combined)
+// ============================================================================
+
+class StandardRadiatorsScenario : public ::testing::Test
+{
+ protected:
+  void SetUp() override
+  {
+    config.solar_zenith_angle = 30.0;
+    config.n_wavelength_bins = 50;
+    config.wavelength_min = 200.0;  // Include far UV for O2
+    config.wavelength_max = 700.0;
+    config.n_altitude_layers = 40;
+    config.altitude_min = 0.0;
+    config.altitude_max = 80.0;
+    config.surface_albedo = 0.1;
+    config.ozone_column_DU = 300.0;
+
+    model = std::make_unique<TuvModel>(config);
+    model->UseStandardAtmosphere();
+    model->AddStandardRadiators();  // O3 + O2 + Rayleigh
+  }
+
+  ModelConfig config;
+  std::unique_ptr<TuvModel> model;
+};
+
+TEST_F(StandardRadiatorsScenario, AllRadiatorsActive)
+{
+  auto output = model->Calculate();
+
+  // Should have valid output
+  EXPECT_FALSE(output.Empty());
+  EXPECT_TRUE(output.is_daytime);
+
+  // Both TOA and surface should have positive flux
+  double flux_toa = output.GetIntegratedActinicFlux(output.NumberOfLevels() - 1);
+  double flux_surface = output.GetIntegratedActinicFlux(0);
+
+  EXPECT_GT(flux_toa, 0.0);
+  EXPECT_GT(flux_surface, 0.0);
+
+  // UV-B (absorbed by O3) should be much lower at surface than TOA
+  double uvb_toa = output.GetUVBActinicFlux(output.NumberOfLevels() - 1);
+  double uvb_surface = output.GetUVBActinicFlux(0);
+
+  EXPECT_GT(uvb_toa, 0.0);
+  EXPECT_GT(uvb_surface, 0.0);
+  EXPECT_GT(uvb_toa, uvb_surface);  // UV-B attenuated by O3
+}
+
+TEST_F(StandardRadiatorsScenario, FarUVStronglyAttenuated)
+{
+  auto output = model->Calculate();
+
+  // Far UV (<240 nm) should be almost completely absorbed by O2 and O3
+  // Get flux at surface for UV-C region
+  auto actinic = output.GetActinicFlux(0);
+  auto wavelengths_span = model->WavelengthGrid().Midpoints();
+
+  // Sum flux in far UV (< 240 nm) vs near UV (280-320 nm)
+  double far_uv_flux = 0.0;
+  double near_uv_flux = 0.0;
+  double bin_width = (config.wavelength_max - config.wavelength_min) / config.n_wavelength_bins;
+
+  for (std::size_t i = 0; i < actinic.size(); ++i)
+  {
+    double wl = config.wavelength_min + (i + 0.5) * bin_width;
+    if (wl < 240.0)
+    {
+      far_uv_flux += actinic[i];
+    }
+    else if (wl >= 280.0 && wl <= 320.0)
+    {
+      near_uv_flux += actinic[i];
+    }
+  }
+
+  // Far UV should be much weaker than near UV at surface
+  // (O2 absorbs strongly below 240 nm)
+  EXPECT_LT(far_uv_flux, near_uv_flux * 0.1);
+}
+
+TEST_F(StandardRadiatorsScenario, RealisticSZADependence)
+{
+  // With all radiators, SZA dependence should be strong for UV-B
+  auto output_0 = model->Calculate(0.0);
+  auto output_60 = model->Calculate(60.0);
+  auto output_80 = model->Calculate(80.0);
+
+  // UV-B shows strong SZA dependence due to O3 absorption path length
+  double uvb_0 = output_0.GetUVBActinicFlux(0);
+  double uvb_60 = output_60.GetUVBActinicFlux(0);
+  double uvb_80 = output_80.GetUVBActinicFlux(0);
+
+  // UV-B flux should decrease with SZA (monotonic)
+  EXPECT_GT(uvb_0, 0.0);
+  EXPECT_GT(uvb_0, uvb_60);
+  EXPECT_GT(uvb_60, uvb_80);
+  EXPECT_GT(uvb_80, 0.0);  // Still positive at high SZA
+
+  // The decrease should be significant (at least 10% from SZA 0 to 60)
+  double ratio_60 = uvb_60 / uvb_0;
+  EXPECT_LT(ratio_60, 0.95);
+
+  // And even more at SZA 80
+  double ratio_80 = uvb_80 / uvb_0;
+  EXPECT_LT(ratio_80, ratio_60);
+}

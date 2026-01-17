@@ -364,6 +364,33 @@ namespace tuvx
       return ozone;
     }
 
+    /// O2 volume mixing ratio in atmosphere
+    constexpr double kO2MixingRatio = 0.2095;
+
+    /// O2 number density [molecules/cm³] from air density
+    /// @param air_density Air number density [molecules/cm³]
+    /// @return O2 number density [molecules/cm³]
+    inline double O2Density(double air_density)
+    {
+      return air_density * kO2MixingRatio;
+    }
+
+    /// Generate O2 number density profile for altitude grid
+    /// @param altitude_midpoints Altitude midpoints [km]
+    /// @return O2 number density profile [molecules/cm³]
+    inline std::vector<double> GenerateO2Profile(const std::vector<double>& altitude_midpoints)
+    {
+      std::vector<double> o2;
+      o2.reserve(altitude_midpoints.size());
+      for (double z : altitude_midpoints)
+      {
+        double T = Temperature(z);
+        double P = Pressure(z);
+        o2.push_back(O2Density(AirDensity(T, P)));
+      }
+      return o2;
+    }
+
   }  // namespace StandardAtmosphere
 
 }  // namespace tuvx

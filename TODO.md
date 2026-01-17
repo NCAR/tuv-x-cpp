@@ -2,8 +2,8 @@
 
 ## Project Status
 
-**Current State**: Phase 5 In Progress - Numerical validation
-**Tests**: 524 passing
+**Current State**: Phase 7 Complete - Radiator Integration
+**Tests**: 531 passing
 **Branch**: develop
 
 ---
@@ -137,12 +137,13 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 - [ ] ClONO2 cross-section
 - [ ] Load from JPL/IUPAC data files
 
-### Phase 7: Radiator Integration (Medium Priority)
+### Phase 7: Radiator Integration (Complete)
 - [x] Wire radiators into TuvModel.Calculate()
 - [x] Implement O3 radiator with Chapman layer O3 profile
-- [ ] Implement O2 radiator (Schumann-Runge)
-- [ ] Implement Rayleigh scattering radiator
-- [ ] Implement aerosol radiator
+- [x] Implement O2 radiator (Schumann-Runge bands)
+- [x] Implement Rayleigh scattering radiator (λ^-4 dependence)
+- [x] Implement aerosol radiator (Ångström parameterization)
+- [x] Add AddStandardRadiators() convenience method (O3 + O2 + Rayleigh)
 
 ### Phase 8: C/Fortran Interfaces (Medium Priority)
 - [ ] C API wrapper (`tuvx_c.h`)

@@ -20,7 +20,10 @@
 #include <tuvx/radiator/radiator_state.hpp>
 #include <tuvx/radiator/radiator_warehouse.hpp>
 #include <tuvx/radiator/types/from_cross_section.hpp>
+#include <tuvx/radiator/types/rayleigh.hpp>
+#include <tuvx/radiator/types/aerosol.hpp>
 #include <tuvx/cross_section/types/o3.hpp>
+#include <tuvx/cross_section/types/o2.hpp>
 #include <tuvx/solar/extraterrestrial_flux.hpp>
 #include <tuvx/solar/solar_position.hpp>
 #include <tuvx/solver/delta_eddington.hpp>
@@ -227,6 +230,84 @@ namespace tuvx
       return *this;
     }
 
+    /// @brief Add oxygen (O2) as a radiator using Schumann-Runge cross-sections
+    ///
+    /// This convenience method creates an O2 radiator using simplified
+    /// Schumann-Runge band cross-sections. The O2 number density profile
+    /// is calculated as 20.95% of the air density profile.
+    ///
+    /// @return Reference to this model for chaining
+    TuvModel& AddO2Radiator()
+    {
+      auto o2_radiator = std::make_unique<FromCrossSectionRadiator>(
+          "O2",
+          std::make_unique<O2CrossSection>(),
+          "O2",          // density profile name
+          "temperature", // temperature profile name
+          "wavelength",  // wavelength grid name
+          "altitude"     // altitude grid name
+      );
+      radiators_.Add(std::move(o2_radiator));
+      return *this;
+    }
+
+    /// @brief Add Rayleigh (molecular) scattering
+    ///
+    /// This adds molecular scattering based on air density. Rayleigh
+    /// scattering has ω = 1 (pure scattering) and g = 0 (isotropic).
+    /// The cross-section follows λ^-4 wavelength dependence.
+    ///
+    /// @return Reference to this model for chaining
+    TuvModel& AddRayleighRadiator()
+    {
+      auto rayleigh_radiator = std::make_unique<RayleighRadiator>(
+          "air_density", // air density profile name
+          "wavelength",  // wavelength grid name
+          "altitude"     // altitude grid name
+      );
+      radiators_.Add(std::move(rayleigh_radiator));
+      return *this;
+    }
+
+    /// @brief Add aerosol radiator with default configuration
+    ///
+    /// Default configuration: τ = 0.1 at 550 nm, Ångström exponent = 1.3,
+    /// scale height = 2 km, ω = 0.9, g = 0.7.
+    ///
+    /// @return Reference to this model for chaining
+    TuvModel& AddAerosolRadiator()
+    {
+      auto aerosol_radiator = std::make_unique<AerosolRadiator>();
+      radiators_.Add(std::move(aerosol_radiator));
+      return *this;
+    }
+
+    /// @brief Add aerosol radiator with custom configuration
+    ///
+    /// @param config Aerosol configuration parameters
+    /// @return Reference to this model for chaining
+    TuvModel& AddAerosolRadiator(AerosolRadiator::Config config)
+    {
+      auto aerosol_radiator = std::make_unique<AerosolRadiator>(std::move(config));
+      radiators_.Add(std::move(aerosol_radiator));
+      return *this;
+    }
+
+    /// @brief Add all standard radiators (O3, O2, Rayleigh)
+    ///
+    /// Convenience method to add the major atmospheric absorbers and
+    /// scatterers in one call. Does not include aerosols (use AddAerosolRadiator
+    /// separately if needed).
+    ///
+    /// @return Reference to this model for chaining
+    TuvModel& AddStandardRadiators()
+    {
+      AddO3Radiator();
+      AddO2Radiator();
+      AddRayleighRadiator();
+      return *this;
+    }
+
     // ========================================================================
     // Photolysis Reaction Setup
     // ========================================================================
@@ -333,6 +414,14 @@ namespace tuvx
         ozone = StandardAtmosphere::GenerateOzoneProfile(midpoints_vec, config_.ozone_column_DU);
       }
 
+      // Get O2 profile (20.95% of air density)
+      std::vector<double> o2;
+      o2.reserve(air_density.size());
+      for (double air_n : air_density)
+      {
+        o2.push_back(air_n * StandardAtmosphere::kO2MixingRatio);
+      }
+
       // Combine radiator states
       RadiatorState combined_state;
       combined_state.Initialize(n_layers, n_wavelengths);
@@ -356,6 +445,9 @@ namespace tuvx
         profiles.Add(Profile(
             ProfileSpec{ "O3", "molecules/cm^3", n_layers },
             ozone));
+        profiles.Add(Profile(
+            ProfileSpec{ "O2", "molecules/cm^3", n_layers },
+            o2));
 
         // Update all radiators with current atmospheric state
         radiators_.UpdateAll(grids, profiles);
