@@ -59,3 +59,4 @@ plots/
 # debug information files
 *.dwo
 Testing/
+.claude/
