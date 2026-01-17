@@ -112,17 +112,22 @@ namespace tuvx
     /// @return Cross-section in cm²/molecule
     ///
     /// Uses the parameterization from Bodhaine et al. (1999):
-    ///   σ_R(λ) = A × (λ/λ₀)^(-4.04)
+    ///   σ_R(λ) = σ_ref × (λ_ref/λ)^(4+ε)
     ///
-    /// where A = 4.02e-28 cm² at λ₀ = 1 nm
+    /// where σ_ref = 4.02e-28 cm² at λ_ref = 1000 nm (1 μm)
+    /// and ε ≈ 0.04 accounts for dispersion of the refractive index.
+    ///
+    /// This gives σ ≈ 1.7e-26 cm² at 400 nm, consistent with
+    /// literature values for standard air.
     static double RayleighCrossSection(double wavelength_nm)
     {
-      // Rayleigh cross-section parameters
-      // A is chosen to give σ ≈ 1.8e-26 cm² at 400 nm
-      constexpr double A = 4.02e-28;  // cm² at 1 nm
-      constexpr double exponent = -4.04;
+      // Rayleigh cross-section at reference wavelength 1000 nm
+      constexpr double sigma_ref = 4.02e-28;  // cm² at 1000 nm
+      constexpr double lambda_ref = 1000.0;   // nm
+      constexpr double exponent = 4.04;       // 4 + dispersion correction
 
-      return A * std::pow(wavelength_nm, exponent);
+      double ratio = lambda_ref / wavelength_nm;
+      return sigma_ref * std::pow(ratio, exponent);
     }
 
    private:

@@ -53,6 +53,7 @@ create_tuvx_test(test_photolysis_rate photolysis/test_photolysis_rate.cpp)
 # Model tests
 create_tuvx_test(test_tuv_model model/test_tuv_model.cpp)
 create_tuvx_test(test_model_scenarios model/test_model_scenarios.cpp)
+create_tuvx_test(test_spectral_analysis model/test_spectral_analysis.cpp)
 
 # Validation tests (numerical benchmarks)
 create_tuvx_test(test_delta_eddington_benchmarks validation/test_delta_eddington_benchmarks.cpp)

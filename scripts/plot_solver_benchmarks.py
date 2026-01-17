@@ -4,13 +4,13 @@ Plot Delta-Eddington solver benchmark results.
 
 Usage:
     # Generate CSV data
-    ./build/test/unit/test_delta_eddington_benchmarks --csv > data/benchmarks.csv
+    ./build/test/unit/test_delta_eddington_benchmarks --csv > plots/benchmarks.csv
 
     # Create plots
-    python scripts/plot_solver_benchmarks.py data/benchmarks.csv
+    python scripts/plot_solver_benchmarks.py plots/benchmarks.csv -o plots/benchmark
 
     # Or pipe directly
-    ./build/test/unit/test_delta_eddington_benchmarks --csv | python scripts/plot_solver_benchmarks.py
+    ./build/test/unit/test_delta_eddington_benchmarks --csv | python scripts/plot_solver_benchmarks.py -o plots/benchmark
 """
 
 import sys

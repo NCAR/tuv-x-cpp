@@ -534,6 +534,73 @@ namespace tuvx
       return photolysis_reactions_;
     }
 
+    /// @brief Get grid warehouse containing wavelength and altitude grids
+    /// @return GridWarehouse with model grids
+    GridWarehouse GetGridWarehouse() const
+    {
+      GridWarehouse grids;
+      grids.Add(wavelength_grid_);
+      grids.Add(altitude_grid_);
+      return grids;
+    }
+
+    /// @brief Create profile warehouse with current atmospheric profiles
+    /// @return ProfileWarehouse with temperature, air density, O3, O2 profiles
+    ProfileWarehouse CreateProfileWarehouse() const
+    {
+      std::size_t n_layers = altitude_grid_.Spec().n_cells;
+
+      // Get altitude midpoints for profile generation
+      auto midpoints_span = altitude_grid_.Midpoints();
+      std::vector<double> midpoints_vec(midpoints_span.begin(), midpoints_span.end());
+
+      // Get temperature profile
+      std::vector<double> temperatures = config_.temperature_profile;
+      if (temperatures.empty())
+      {
+        temperatures = StandardAtmosphere::GenerateTemperatureProfile(midpoints_vec);
+      }
+
+      // Get air density profile
+      std::vector<double> air_density = config_.air_density_profile;
+      if (air_density.empty())
+      {
+        air_density = StandardAtmosphere::GenerateAirDensityProfile(midpoints_vec);
+      }
+
+      // Get ozone profile
+      std::vector<double> ozone = config_.ozone_profile;
+      if (ozone.empty())
+      {
+        ozone = StandardAtmosphere::GenerateOzoneProfile(midpoints_vec, config_.ozone_column_DU);
+      }
+
+      // Get O2 profile (20.95% of air density)
+      std::vector<double> o2;
+      o2.reserve(air_density.size());
+      for (double air_n : air_density)
+      {
+        o2.push_back(air_n * StandardAtmosphere::kO2MixingRatio);
+      }
+
+      // Create profile warehouse
+      ProfileWarehouse profiles;
+      profiles.Add(Profile(
+          ProfileSpec{ "temperature", "K", n_layers },
+          temperatures));
+      profiles.Add(Profile(
+          ProfileSpec{ "air_density", "molecules/cm^3", n_layers },
+          air_density));
+      profiles.Add(Profile(
+          ProfileSpec{ "O3", "molecules/cm^3", n_layers },
+          ozone));
+      profiles.Add(Profile(
+          ProfileSpec{ "O2", "molecules/cm^3", n_layers },
+          o2));
+
+      return profiles;
+    }
+
    private:
     /// @brief Initialize model components from configuration
     void Initialize()
