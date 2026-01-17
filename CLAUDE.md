@@ -155,6 +155,6 @@ find include src test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
 ## Phase Status
 
 - [x] Phase 1: Foundation (utilities, error handling, constants)
-- [ ] Phase 2: Data structures (grids, profiles)
+- [x] Phase 2: Data structures (grids, profiles, interpolation)
 - [ ] Phase 3: Radiative transfer components
 - [ ] Phase 4+: Solver implementation
