@@ -8,6 +8,27 @@
 
 ---
 
+## Design Philosophy
+
+**Header-only library with embedded data** - no external file dependencies.
+
+All spectral data (cross-sections, solar flux, quantum yields) and atmospheric profiles
+(US Standard Atmosphere) are embedded directly in the source code. This approach:
+
+- Enables single-header inclusion with no runtime file I/O
+- Eliminates data file path configuration issues
+- Keeps the library self-contained and portable
+- Simplifies deployment and testing
+
+The embedded data uses representative values suitable for demonstrating correct
+radiative transfer behavior. For research applications requiring precise JPL/IUPAC
+recommended values, users can construct cross-sections with custom data arrays.
+
+The TUV-x Fortran repository contains high-resolution NetCDF data files that could
+be used to generate more accurate embedded constants if needed.
+
+---
+
 ## Completed Phases
 
 ### Phase 1: Foundation
@@ -159,8 +180,7 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 ### Phase 10: Configuration & I/O (Lower Priority)
 - [ ] JSON configuration file support
 - [ ] YAML configuration file support
-- [ ] NetCDF output support
-- [ ] Cross-section data file readers
+- [ ] NetCDF output support (optional, for validation comparisons)
 
 ---
 
