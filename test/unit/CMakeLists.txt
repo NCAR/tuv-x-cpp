@@ -25,3 +25,11 @@ create_tuvx_test(test_cross_section_o3 cross_section/test_cross_section_o3.cpp)
 # Quantum yield tests
 create_tuvx_test(test_quantum_yield quantum_yield/test_quantum_yield.cpp)
 create_tuvx_test(test_quantum_yield_warehouse quantum_yield/test_quantum_yield_warehouse.cpp)
+
+# Radiator tests
+create_tuvx_test(test_radiator_state radiator/test_radiator_state.cpp)
+create_tuvx_test(test_radiator radiator/test_radiator.cpp)
+create_tuvx_test(test_radiator_warehouse radiator/test_radiator_warehouse.cpp)
+
+# Radiation field tests
+create_tuvx_test(test_radiation_field radiation_field/test_radiation_field.cpp)

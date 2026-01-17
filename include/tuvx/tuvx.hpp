@@ -39,5 +39,14 @@
 #include <tuvx/quantum_yield/types/base.hpp>
 #include <tuvx/quantum_yield/types/o3_o1d.hpp>
 
+// Radiator headers
+#include <tuvx/radiator/radiator_state.hpp>
+#include <tuvx/radiator/radiator.hpp>
+#include <tuvx/radiator/radiator_warehouse.hpp>
+#include <tuvx/radiator/types/from_cross_section.hpp>
+
+// Radiation field headers
+#include <tuvx/radiation_field/radiation_field.hpp>
+
 // Version information
 #include <tuvx/version.hpp>
