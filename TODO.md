@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current State**: Phase 7 Complete - Working UV-Vis Radiative Transfer Library
+**Current State**: Working UV-Vis Radiative Transfer Library
 **Tests**: 539 passing
 **Branch**: develop
 
@@ -29,58 +29,61 @@ be used to generate more accurate embedded constants if needed.
 
 ---
 
-## Completed Phases
+## Completed
 
-### Phase 1: Foundation
+### Foundation
 - [x] Project structure and CMake build system
 - [x] Physical constants (`tuvx::constants`)
 - [x] Error handling (`error.hpp`, `internal_error.hpp`)
 - [x] Array utilities (`array.hpp`)
 
-### Phase 2: Data Structures
+### Data Structures
 - [x] Grid system (`Grid`, `MutableGrid`, `GridWarehouse`)
 - [x] Profile containers (`Profile`, `MutableProfile`, `ProfileWarehouse`)
 - [x] Interpolation (`LinearInterpolator`, `ConservingInterpolator`)
 
-### Phase 3A: Cross-Sections & Quantum Yields
+### Core Components
+**Cross-Sections & Quantum Yields:**
 - [x] Cross-section interface and warehouse
 - [x] `BaseCrossSection` - temperature-independent
 - [x] `O3CrossSection` - temperature-dependent (Bass-Paur)
+- [x] `O2CrossSection` - Schumann-Runge bands (simplified)
 - [x] Quantum yield interface and warehouse
 - [x] `ConstantQuantumYield`
 - [x] `O3O1DQuantumYield` - temperature-dependent
 
-### Phase 3B: Radiators & Radiation Field
+**Radiators & Radiation Field:**
 - [x] `RadiatorState` - optical properties (τ, ω, g)
 - [x] `Radiator` interface and warehouse
 - [x] `FromCrossSectionRadiator`
+- [x] `RayleighRadiator` - molecular scattering (lambda^-4)
+- [x] `AerosolRadiator` - Angstrom parameterization
 - [x] `RadiationField` - actinic flux storage
 
-### Phase 3C: Solar & Surface
+**Solar & Surface:**
 - [x] Solar position calculation (SZA from date/time/location)
 - [x] Extraterrestrial flux (ASTM E-490 reference spectrum)
 - [x] Surface albedo (uniform and wavelength-dependent)
 - [x] Spherical geometry (slant paths, Chapman function)
 
-### Phase 3D: Solver & Photolysis
+**Solver & Photolysis:**
 - [x] `Solver` interface
 - [x] `DeltaEddingtonSolver` - two-stream radiative transfer
 - [x] `PhotolysisRateSet` - J-value calculations
 
-### Phase 4: Model Orchestration
+### Model Orchestration
 - [x] `ModelConfig` - comprehensive configuration
 - [x] `ModelOutput` - results with accessor methods
 - [x] `TuvModel` - main orchestration class
-- [x] `StandardAtmosphere` - US Standard Atmosphere 1976 profiles (T, P, ρ, O3)
+- [x] `StandardAtmosphere` - US Standard Atmosphere 1976 profiles (T, P, ρ, O3, O2)
 - [x] Scenario tests (clear sky, SZA dependence, polar, etc.)
-- [x] O3 radiator integration with `AddO3Radiator()` convenience method
-- [x] O3 radiator scenario tests (UV attenuation, altitude/SZA dependence)
+- [x] `AddStandardRadiators()` convenience method (O3 + O2 + Rayleigh)
 
 ---
 
 ## Next Steps (Prioritized)
 
-### Phase 5: Numerical Validation (In Progress)
+### Numerical Validation (In Progress)
 See `NUMERICAL-TESTS.md` for detailed test specifications.
 
 **Completed:**
@@ -98,22 +101,16 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
   - [x] Atmospheric transmittance
 - [x] Plotting infrastructure (`scripts/plot_spectral_analysis.py`)
 
-**Next: Fortran Parity Testing**
-- [ ] Set up TUV 5.4 reference scenario
-- [ ] Compare radiation field outputs
-- [ ] Compare photolysis rates (69 reactions)
-- [ ] Compare dose rates (28 types)
+**Fortran Parity Testing** (next priority):
 
-### Phase 5B: Fortran Feature Parity (High Priority)
+Goal: Replicate TUV-x Fortran validation tests in C++
 
-**Goal**: Replicate TUV-x Fortran validation tests in C++
-
-**Reference Data** (from TUV-x Fortran):
+Reference Data (from TUV-x Fortran):
 - `test/regression/photolysis_rates/photo_rates.nc` - 69 reactions, 125 levels × 5 SZAs
 - `test/regression/dose_rates/dose_rates.nc` - 28 types, 125 levels × 5 SZAs
 - Tolerances: RMS < 1e-6, max < 1e-5
 
-**Standard Test Scenario** (TUV 5.4):
+Standard Test Scenario (TUV 5.4):
 - Height grid: 0-120 km, 1 km resolution (121 levels)
 - Wavelength grid: combined.grid
 - Date: March 21, 2002 (equinox)
@@ -121,43 +118,27 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 - Surface albedo: 0.1
 - Atmosphere: US Standard Atmosphere 1976
 
-**Required Components for Parity**:
+Remaining work:
+- [ ] Set up TUV 5.4 reference scenario
+- [ ] Compare radiation field outputs
+- [ ] Compare photolysis rates (69 reactions)
+- [ ] Compare dose rates (28 types)
+- [ ] High-resolution cross-section data from NetCDF
+- [ ] High-resolution solar spectra (SUSIM, ATLAS3, SAO2010)
+- [ ] NetCDF output capability
+- [ ] Comparison utilities (Python or C++)
 
-1. **Cross-Sections** (simplified versions complete, high-res needed):
-   - [x] O2 cross-section with Schumann-Runge bands (simplified)
-   - [x] O3 cross-section (temperature-dependent, simplified)
-   - [x] Rayleigh cross-section (analytical)
-   - [ ] 60+ additional cross-sections for full photolysis coverage
-   - [ ] High-resolution spectral data from NetCDF files
+Priority Photolysis Reactions (subset for initial validation):
+- O2 + hν → O + O
+- O3 + hν → O2 + O(1D)
+- O3 + hν → O2 + O(3P)
+- NO2 + hν → NO + O(3P)
+- H2O2 + hν → OH + OH
+- HNO3 + hν → OH + NO2
+- CH2O + hν → H + HCO
+- CH2O + hν → H2 + CO
 
-2. **Radiators** (Complete):
-   - [x] Rayleigh radiator (lambda^-4, omega=1, g=0)
-   - [x] O2 radiator (Schumann-Runge)
-   - [x] O3 radiator (Hartley/Huggins)
-   - [x] Aerosol radiator (Angstrom parameterization)
-
-3. **Data Files** (embedded simplified versions complete):
-   - [x] USSA atmosphere profiles (T, P, rho, O3, O2 - analytical)
-   - [x] Solar flux spectrum (ASTM E-490, simplified)
-   - [ ] High-resolution cross-section data from NetCDF
-   - [ ] High-resolution solar spectra (SUSIM, ATLAS3, SAO2010)
-
-4. **Validation Infrastructure**:
-   - [ ] NetCDF output capability
-   - [ ] Comparison utilities (Python or C++)
-   - [ ] Reference data extraction from Fortran
-
-**Priority Photolysis Reactions** (subset for initial validation):
-1. O2 + hν → O + O
-2. O3 + hν → O2 + O(1D)
-3. O3 + hν → O2 + O(3P)
-4. NO2 + hν → NO + O(3P)
-5. H2O2 + hν → OH + OH
-6. HNO3 + hν → OH + NO2
-7. CH2O + hν → H + HCO
-8. CH2O + hν → H2 + CO
-
-### Phase 6: Additional Cross-Section Types (Medium Priority)
+### Additional Cross-Section Types (Medium Priority)
 - [ ] NO2 cross-section (temperature-dependent)
 - [ ] HCHO cross-section
 - [ ] H2O2 cross-section
@@ -165,28 +146,18 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 - [ ] HNO3 cross-section
 - [ ] High-resolution data loader for JPL/IUPAC recommendations
 
-### Phase 7: Radiator Integration (Complete)
-- [x] Wire radiators into TuvModel.Calculate()
-- [x] Implement O3 radiator with Chapman layer O3 profile
-- [x] Implement O2 radiator (Schumann-Runge bands)
-- [x] Implement Rayleigh scattering radiator (lambda^-4 dependence)
-- [x] Implement aerosol radiator (Angstrom parameterization)
-- [x] Add AddStandardRadiators() convenience method (O3 + O2 + Rayleigh)
-- [x] Fix Rayleigh cross-section (reference wavelength 1000 nm)
-- [x] Add spectral analysis tests and plotting scripts
-
-### Phase 8: C/Fortran Interfaces (Medium Priority)
+### C/Fortran Interfaces (Medium Priority)
 - [ ] C API wrapper (`tuvx_c.h`)
 - [ ] Fortran bindings via ISO_C_BINDING
 - [ ] Example integration code
 
-### Phase 9: Performance Optimization (Lower Priority)
+### Performance Optimization (Lower Priority)
 - [ ] Profile hot paths
 - [ ] SIMD vectorization for wavelength loops
 - [ ] OpenMP parallelization
 - [ ] Memory alignment optimization
 
-### Phase 10: Configuration & I/O (Lower Priority)
+### Configuration & I/O (Lower Priority)
 - [ ] JSON configuration file support
 - [ ] YAML configuration file support
 - [ ] NetCDF output support (optional, for validation comparisons)
