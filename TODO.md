@@ -2,8 +2,8 @@
 
 ## Project Status
 
-**Current State**: Phase 7 Complete - Radiator Integration
-**Tests**: 531 passing
+**Current State**: Phase 7 Complete - Working UV-Vis Radiative Transfer Library
+**Tests**: 539 passing
 **Branch**: develop
 
 ---
@@ -91,6 +91,12 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
   - [x] Optically thin/thick limits
   - [x] Multi-layer integration
   - [x] Physical consistency
+- [x] Spectral analysis tests (4 tests)
+  - [x] Cross-section spectra (Rayleigh, O3, O2)
+  - [x] Optical depth by radiator type
+  - [x] Altitude-resolved actinic flux
+  - [x] Atmospheric transmittance
+- [x] Plotting infrastructure (`scripts/plot_spectral_analysis.py`)
 
 **Next: Fortran Parity Testing**
 - [ ] Set up TUV 5.4 reference scenario
@@ -117,23 +123,24 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 
 **Required Components for Parity**:
 
-1. **Cross-Sections** (Phase 6 prerequisite):
-   - [ ] O2 cross-section with Schumann-Runge bands
-   - [ ] O3 cross-section (temperature-dependent, 4 files)
-   - [ ] Air cross-section (Rayleigh)
+1. **Cross-Sections** (simplified versions complete, high-res needed):
+   - [x] O2 cross-section with Schumann-Runge bands (simplified)
+   - [x] O3 cross-section (temperature-dependent, simplified)
+   - [x] Rayleigh cross-section (analytical)
    - [ ] 60+ additional cross-sections for full photolysis coverage
+   - [ ] High-resolution spectral data from NetCDF files
 
-2. **Radiators** (Phase 7 prerequisite):
-   - [ ] Air/Rayleigh radiator
-   - [ ] O2 radiator
-   - [ ] O3 radiator
-   - [ ] Aerosol radiator (with wavelength-dependent optical depth)
+2. **Radiators** (Complete):
+   - [x] Rayleigh radiator (lambda^-4, omega=1, g=0)
+   - [x] O2 radiator (Schumann-Runge)
+   - [x] O3 radiator (Hartley/Huggins)
+   - [x] Aerosol radiator (Angstrom parameterization)
 
-3. **Data Files**:
-   - [ ] USSA atmosphere profiles (O3, air, O2, temperature)
-   - [ ] Solar flux spectrum (SUSIM, ATLAS3, SAO2010, Neckel)
-   - [ ] Cross-section NetCDF files
-   - [ ] Wavelength grids
+3. **Data Files** (embedded simplified versions complete):
+   - [x] USSA atmosphere profiles (T, P, rho, O3, O2 - analytical)
+   - [x] Solar flux spectrum (ASTM E-490, simplified)
+   - [ ] High-resolution cross-section data from NetCDF
+   - [ ] High-resolution solar spectra (SUSIM, ATLAS3, SAO2010)
 
 4. **Validation Infrastructure**:
    - [ ] NetCDF output capability
@@ -152,19 +159,21 @@ See `NUMERICAL-TESTS.md` for detailed test specifications.
 
 ### Phase 6: Additional Cross-Section Types (Medium Priority)
 - [ ] NO2 cross-section (temperature-dependent)
-- [ ] O2 cross-section (Schumann-Runge bands)
 - [ ] HCHO cross-section
 - [ ] H2O2 cross-section
 - [ ] ClONO2 cross-section
-- [ ] Load from JPL/IUPAC data files
+- [ ] HNO3 cross-section
+- [ ] High-resolution data loader for JPL/IUPAC recommendations
 
 ### Phase 7: Radiator Integration (Complete)
 - [x] Wire radiators into TuvModel.Calculate()
 - [x] Implement O3 radiator with Chapman layer O3 profile
 - [x] Implement O2 radiator (Schumann-Runge bands)
-- [x] Implement Rayleigh scattering radiator (λ^-4 dependence)
-- [x] Implement aerosol radiator (Ångström parameterization)
+- [x] Implement Rayleigh scattering radiator (lambda^-4 dependence)
+- [x] Implement aerosol radiator (Angstrom parameterization)
 - [x] Add AddStandardRadiators() convenience method (O3 + O2 + Rayleigh)
+- [x] Fix Rayleigh cross-section (reference wavelength 1000 nm)
+- [x] Add spectral analysis tests and plotting scripts
 
 ### Phase 8: C/Fortran Interfaces (Medium Priority)
 - [ ] C API wrapper (`tuvx_c.h`)
