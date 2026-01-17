@@ -58,5 +58,12 @@
 // Spherical geometry headers
 #include <tuvx/spherical_geometry/spherical_geometry.hpp>
 
+// Solver headers
+#include <tuvx/solver/solver.hpp>
+#include <tuvx/solver/delta_eddington.hpp>
+
+// Photolysis rate headers
+#include <tuvx/photolysis/photolysis_rate.hpp>
+
 // Version information
 #include <tuvx/version.hpp>

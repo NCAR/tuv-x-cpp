@@ -43,3 +43,9 @@ create_tuvx_test(test_surface_albedo surface/test_surface_albedo.cpp)
 
 # Spherical geometry tests
 create_tuvx_test(test_spherical_geometry spherical_geometry/test_spherical_geometry.cpp)
+
+# Solver tests
+create_tuvx_test(test_delta_eddington solver/test_delta_eddington.cpp)
+
+# Photolysis tests
+create_tuvx_test(test_photolysis_rate photolysis/test_photolysis_rate.cpp)
