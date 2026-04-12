@@ -8,6 +8,7 @@ Daily journal entries are in [`journal/`](journal/). Each file covers one day's 
 |------|---------|---------|
 | 5 Apr 2026 | [2026-04-05](journal/2026-04-05.md) | Session 1: Project setup, branching strategy, Phase 0 plan, validation strategy |
 | 5 Apr 2026 | [2026-04-05](journal/2026-04-05.md) | Session 2: Phase 0 implementation, CI/CD, Codex review, CI fixes, PR, MUSICA board |
+| 12 Apr 2026 | [2026-04-12](journal/2026-04-12.md) | Session 3: Two-repo reorganization, PR review response, code assessment, Array1D migration |
 
 ---
 
