@@ -20,5 +20,6 @@ Claude API usage for this project, tracked per session. LLM time is actual infer
 |------|-------|----------|-----------|-------|-----------------|
 | 5 Apr 2026 | Opus 4.6 | ~6 min | ~1h 47min | ~25 | Branching strategy, Phase 0 plan, Fortran preservation, validation strategy, CLAUDE.md |
 | 5 Apr 2026 | Opus 4.6 | ~50 min | ~1h 41min | ~23 | Phase 0 implementation, CI/CD, Codex Review II, CI fixes, AGENTS.md, MUSICA project board |
+| 12 Apr 2026 | Opus 4.6 | ~16 min | ~50 min | ~20 | Two-repo reorganization, PR review response, code assessment, Array1D migration |
 
-**Running totals:** ~56 min LLM time
+**Running totals:** ~72 min LLM time
