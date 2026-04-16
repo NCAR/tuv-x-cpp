@@ -9,6 +9,7 @@ Daily journal entries are in [`journal/`](journal/). Each file covers one day's 
 | 5 Apr 2026 | [2026-04-05](journal/2026-04-05.md) | Session 1: Project setup, branching strategy, Phase 0 plan, validation strategy |
 | 5 Apr 2026 | [2026-04-05](journal/2026-04-05.md) | Session 2: Phase 0 implementation, CI/CD, Codex review, CI fixes, PR, MUSICA board |
 | 12 Apr 2026 | [2026-04-12](journal/2026-04-12.md) | Session 3: Two-repo reorganization, PR review response, code assessment, Array1D migration |
+| 16 Apr 2026 | [2026-04-16](journal/2026-04-16.md) | Session 4: Address Kyle's PR review — drop LAPACK, set up sphinx+breathe+doxygen docs, CMake cleanup |
 
 ---
 
@@ -21,5 +22,6 @@ Claude API usage for this project, tracked per session. LLM time is actual infer
 | 5 Apr 2026 | Opus 4.6 | ~6 min | ~1h 47min | ~25 | Branching strategy, Phase 0 plan, Fortran preservation, validation strategy, CLAUDE.md |
 | 5 Apr 2026 | Opus 4.6 | ~50 min | ~1h 41min | ~23 | Phase 0 implementation, CI/CD, Codex Review II, CI fixes, AGENTS.md, MUSICA project board |
 | 12 Apr 2026 | Opus 4.6 | ~16 min | ~50 min | ~20 | Two-repo reorganization, PR review response, code assessment, Array1D migration |
+| 16 Apr 2026 | Opus 4.7 | _pending_ | _pending_ | _pending_ | Address Kyle's PR review — drop LAPACK, set up sphinx+breathe+doxygen docs, CMake cleanup |
 
-**Running totals:** ~72 min LLM time
+**Running totals:** ~72 min LLM time (pre-Session 4)
